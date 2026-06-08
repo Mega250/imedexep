@@ -25,7 +25,6 @@ async def redeem_qr(
 ):
     return await QRRecordAccessService(session).redeem(
         code=body.verification_code,
-        redeemer_user_id=token.user_id,
-        redeemer_role=token.role,
+        caller=token,
         institution_id=body.institution_id,
     )

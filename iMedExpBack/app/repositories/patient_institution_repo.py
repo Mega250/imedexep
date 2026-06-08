@@ -29,6 +29,41 @@ class PatientInstitutionRepository(BaseRepository[PatientInstitution]):
         )
         return result.scalar_one_or_none()
 
+    async def get_any_by_patient_and_institution(
+        self,
+        patient_id: int,
+        institution_id: int,
+    ) -> PatientInstitution | None:
+        result = await self.session.execute(
+            select(PatientInstitution).where(
+                PatientInstitution.patient_id == patient_id,
+                PatientInstitution.institution_id == institution_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def ensure_linked(
+        self,
+        patient_id: int,
+        institution_id: int,
+        record_number: str | None = None,
+    ) -> PatientInstitution:
+        existing = await self.get_any_by_patient_and_institution(
+            patient_id, institution_id
+        )
+        if existing:
+            existing.unlinked_at = None
+            if record_number and not existing.record_number:
+                existing.record_number = record_number
+            await self.session.flush()
+            await self.session.refresh(existing)
+            return existing
+        return await self.create(
+            patient_id=patient_id,
+            institution_id=institution_id,
+            record_number=record_number,
+        )
+
     async def list_by_patient(self, patient_id: int) -> list[PatientInstitution]:
         result = await self.session.execute(
             select(PatientInstitution)

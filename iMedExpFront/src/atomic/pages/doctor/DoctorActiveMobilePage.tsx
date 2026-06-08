@@ -176,11 +176,11 @@ export function DoctorActiveMobilePage() {
           </Tappable>
           <View style={styles.flex}>
             <Button
-              label={closing ? "Cerrando…" : "Cerrar consulta"}
+              label="Registrar consulta"
               iconRight="arrow"
               height={48}
-              onPress={handleCloseConsultation}
-              disabled={closing}
+              onPress={() => (patientId ? goToScreen("consulta-registro") : undefined)}
+              disabled={patientId === null}
             />
           </View>
         </View>
@@ -279,6 +279,13 @@ export function DoctorActiveMobilePage() {
                 <View style={styles.actionRow}>
                   <Icon kind="pill" size={16} color={colors.accentDeep} />
                   <Text style={styles.actionText}>Recetas</Text>
+                  <Icon kind="chev" size={13} color={colors.ink3} />
+                </View>
+              </Tappable>
+              <Tappable scaleTo={0.96} onPress={handleCloseConsultation} disabled={closing}>
+                <View style={[styles.actionRow, styles.actionRowLast]}>
+                  <Icon kind="x" size={16} color={colors.alert} />
+                  <Text style={styles.actionText}>{closing ? "Cerrando…" : "Cerrar sin registrar"}</Text>
                   <Icon kind="chev" size={13} color={colors.ink3} />
                 </View>
               </Tappable>
@@ -466,6 +473,9 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomWidth: 1,
     borderBottomColor: colors.rule2
+  },
+  actionRowLast: {
+    borderBottomWidth: 0
   },
   actionText: {
     flex: 1,

@@ -11,6 +11,7 @@ import { ConsultationSummary, fetchConsultations } from "@/services/api/consulta
 import { getCurrentDoctorId } from "@/services/api/currentDoctor";
 import { fetchPatient } from "@/services/api/patientsApi";
 import { getSelectedPatientId } from "@/services/api/selectedPatient";
+import { setSelectedConsultationId } from "@/services/api/selectedConsultation";
 import { colors, radii } from "@/theme/tokens";
 import { family, text } from "@/theme/typography";
 
@@ -144,7 +145,7 @@ export function DskConsultasDesktopPage() {
             iconLeft="plus"
             disabled={selectedPatientId === null}
             style={selectedPatientId === null ? styles.ctaBtnDisabled : undefined}
-            onPress={() => goToScreen("doctor-active")}
+            onPress={() => goToScreen("consulta-registro")}
           />
           {selectedPatientId === null ? (
             <Text style={styles.ctaHint}>Selecciona un paciente primero</Text>
@@ -205,7 +206,11 @@ export function DskConsultasDesktopPage() {
             return (
               <Tappable
                 key={r.id}
-                onPress={() => goToScreen("doctor-active")}
+                onPress={() => {
+                  setSelectedConsultationId(r.id)
+                    .then(() => goToScreen("consulta-detalle"))
+                    .catch(() => goToScreen("consulta-detalle"));
+                }}
                 scaleTo={0.995}
               >
                 <View style={[styles.tableRow, { borderBottomWidth: i < items.length - 1 ? 1 : 0 }]}>

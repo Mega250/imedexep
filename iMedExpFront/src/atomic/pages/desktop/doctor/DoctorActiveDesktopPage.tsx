@@ -189,7 +189,6 @@ function AgendaAside({ agenda, totalToday, doneToday }: { agenda: AgendaItem[]; 
 }
 
 function PatientHero({ patient, vinculoDays }: { patient: PatientFull; vinculoDays: number | null }) {
-  const [noteHint, setNoteHint] = useState(false);
   const fullName = `${patient.first_name} ${patient.last_name}`.trim();
   const age = computeAge(patient.date_of_birth);
   const sym = genderSym(patient.gender);
@@ -250,13 +249,12 @@ function PatientHero({ patient, vinculoDays }: { patient: PatientFull; vinculoDa
             </Tappable>
             <Tappable
               scaleTo={0.97}
-              onPress={() => setNoteHint(true)}
-              style={[styles.heroAccentBtn, styles.heroAccentBtnDisabled]}
+              onPress={() => goToScreen("consulta-registro")}
+              style={styles.heroAccentBtn}
             >
-              <Icon kind="plus" size={16} color="rgba(255,255,255,0.7)" />
-              <Text style={styles.heroAccentBtnText}>Nota</Text>
+              <Icon kind="plus" size={16} color="#FFFFFF" />
+              <Text style={styles.heroAccentBtnText}>Registrar consulta</Text>
             </Tappable>
-            {noteHint ? <Text style={styles.heroHint}>Próximamente</Text> : null}
           </View>
         </View>
       </View>
@@ -309,33 +307,20 @@ function FocusColumn({ icon, title, count, accent, items, empty }: { icon: IconK
 }
 
 function QuickBar({ onClose }: { onClose: () => void }) {
-  const actions = ["Nota clínica", "Receta digital", "Solicitar estudio", "Programar seguimiento"];
-  const [hint, setHint] = useState(false);
   return (
     <View style={styles.quickBar}>
       <Text style={styles.quickBarLabel}>ACCIONES DE CONSULTA</Text>
       <View style={styles.quickBarDivider} />
       <View style={styles.quickBarActions}>
-        {actions.map((label) => (
-          <Tappable
-            key={label}
-            scaleTo={0.97}
-            onPress={() => setHint(true)}
-            style={[styles.quickChip, styles.quickChipDisabled]}
-          >
-            <Icon kind="plus" size={13} color="rgba(255,255,255,0.4)" />
-            <Text style={[styles.quickChipText, styles.quickChipTextDisabled]}>{label}</Text>
-          </Tappable>
-        ))}
+        <Tappable scaleTo={0.97} onPress={() => goToScreen("consulta-registro")} style={styles.quickPrimaryBtn}>
+          <Icon kind="plus" size={15} color={colors.ink} />
+          <Text style={styles.quickPrimaryText}>Registrar consulta</Text>
+        </Tappable>
+        <Text style={styles.quickAside}>Motivo, diagnósticos, receta y firma</Text>
       </View>
-      {hint ? <Text style={styles.quickHint}>Próximamente · acción en desarrollo</Text> : null}
-      <Tappable
-        scaleTo={0.97}
-        onPress={onClose}
-        style={styles.quickCloseBtn}
-      >
-        <Text style={styles.quickCloseBtnText}>Cerrar consulta</Text>
-        <Icon kind="arrow" size={14} color={colors.ink} />
+      <Tappable scaleTo={0.97} onPress={onClose} style={styles.quickGhostBtn}>
+        <Text style={styles.quickGhostText}>Cerrar sin registrar</Text>
+        <Icon kind="arrow" size={14} color={colors.paper} />
       </Tappable>
     </View>
   );
@@ -968,6 +953,42 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: "rgba(255,255,255,0.7)",
     alignSelf: "center"
+  },
+  quickPrimaryBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: radii.md,
+    backgroundColor: colors.accentBright
+  },
+  quickPrimaryText: {
+    fontFamily: family.semibold,
+    fontSize: 14,
+    color: colors.ink
+  },
+  quickAside: {
+    fontFamily: family.mono,
+    fontSize: 11,
+    color: "rgba(255,255,255,0.55)",
+    alignSelf: "center"
+  },
+  quickGhostBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 0,
+    gap: 8,
+    paddingHorizontal: 18,
+    paddingVertical: 10,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.2)"
+  },
+  quickGhostText: {
+    fontFamily: family.medium,
+    fontSize: 14,
+    color: colors.paper
   },
   quickCloseBtn: {
     flexDirection: "row",

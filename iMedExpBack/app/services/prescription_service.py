@@ -1,3 +1,4 @@
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import NotFoundError, ConflictError, ForbiddenError
@@ -132,9 +133,6 @@ class PrescriptionService:
         caller: TokenPayload | None = None,
     ) -> dict:
         from datetime import UTC, datetime
-        from sqlalchemy import select
-        from app.models.patient import Patient
-        from app.models.user import User
         from app.utils.email import send_prescription_to_patient
 
         prescription = await self.repo.get_by_id_full(prescription_id)
@@ -143,9 +141,8 @@ class PrescriptionService:
         await self._enforce_caller(prescription, caller)
 
         result = await self.session.execute(
-            select(User.email)
-            .join(Patient, Patient.user_id == User.id)
-            .where(Patient.id == prescription.patient_id)
+            text("SELECT fn_patient_notification_email(:patient_id)"),
+            {"patient_id": prescription.patient_id},
         )
         patient_email = result.scalar_one_or_none()
         if not patient_email:

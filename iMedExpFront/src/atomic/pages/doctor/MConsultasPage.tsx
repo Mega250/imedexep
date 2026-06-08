@@ -11,6 +11,9 @@ import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { ConsultationSummary, fetchConsultations } from "@/services/api/consultationsApi";
 import { Patient, fetchPatientsList } from "@/services/api/patientsApi";
 import { getCurrentDoctorId } from "@/services/api/currentDoctor";
+import { setSelectedConsultationId } from "@/services/api/selectedConsultation";
+import { goToScreen } from "@/navigation/screenRouter";
+import { Tappable } from "@/atomic/atoms/Tappable";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
 
@@ -167,7 +170,7 @@ export function MConsultasPage() {
     <MobileScreen
       tabBar={<DoctorTabBar active={3} />}
       header={<Header todayCount={todayCount} weekCount={weekCount} total={total} />}
-      floating={<FAB icon="plus" label="Nueva consulta" />}
+      floating={<FAB icon="plus" label="Nueva consulta" onPress={() => goToScreen("consulta-registro")} />}
       contentStyle={styles.content}
     >
       {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -195,6 +198,14 @@ export function MConsultasPage() {
               const signed = c.signed_at !== null && c.signed_at !== undefined;
               return (
                 <FadeIn key={c.id}>
+                  <Tappable
+                    scaleTo={0.985}
+                    onPress={() => {
+                      setSelectedConsultationId(c.id)
+                        .then(() => goToScreen("consulta-detalle"))
+                        .catch(() => goToScreen("consulta-detalle"));
+                    }}
+                  >
                   <Card radius={radii.md} style={styles.card}>
                     <View style={styles.cardTop}>
                       <View style={styles.flex}>
@@ -227,6 +238,7 @@ export function MConsultasPage() {
                       <Text style={styles.seeNote}>Ver nota ›</Text>
                     </View>
                   </Card>
+                  </Tappable>
                 </FadeIn>
               );
             })}

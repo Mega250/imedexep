@@ -72,6 +72,10 @@ const PATIENT_SCREENS = new Set<string>([
 const DOCTOR_SCREENS = new Set<string>([
   "dash-mob",
   "active-mob",
+  "consulta-registro",
+  "consulta-detalle",
+  "dsk-consulta-registro",
+  "dsk-consulta-detalle",
   "mob-patients",
   "mob-agenda",
   "mob-consultas",

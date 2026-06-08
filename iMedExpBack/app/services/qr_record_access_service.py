@@ -1,10 +1,14 @@
 from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, UnprocessableError
+from app.models.user import UserRole
+from app.repositories.institution_repo import InstitutionRepository
+from app.repositories.patient_institution_repo import PatientInstitutionRepository
 from app.repositories.qr_record_access_repo import QRRecordAccessRepository
 from app.repositories.patient_repo import PatientRepository
 from app.schemas.qr_record_access import QRAccessResponse, QRRedeemResponse, PatientSummary
+from app.schemas.auth import TokenPayload
 from app.models.patient import Patient
 
 
@@ -13,6 +17,34 @@ class QRRecordAccessService:
         self.session = session
         self.repo = QRRecordAccessRepository(session)
         self.patient_repo = PatientRepository(session)
+        self.patient_institution_repo = PatientInstitutionRepository(session)
+        self.institution_repo = InstitutionRepository(session)
+
+    def _resolve_redeem_institution_id(
+        self,
+        caller: TokenPayload,
+        requested_institution_id: int | None,
+    ) -> int:
+        if caller.role == UserRole.superadmin.value:
+            if requested_institution_id is None:
+                raise UnprocessableError(
+                    "institution_id es obligatorio para superadmin al canjear QR"
+                )
+            return requested_institution_id
+
+        caller_institution_id = caller.institution_id
+        if caller_institution_id is None:
+            raise UnprocessableError(
+                "Tu usuario no tiene una institución asignada para canjear QR"
+            )
+        if (
+            requested_institution_id is not None
+            and requested_institution_id != caller_institution_id
+        ):
+            raise UnprocessableError(
+                "institution_id no coincide con la institución del usuario autenticado"
+            )
+        return caller_institution_id
 
     async def generate(self, user_id: int) -> QRAccessResponse:
         result = await self.session.execute(
@@ -39,10 +71,16 @@ class QRRecordAccessService:
     async def redeem(
         self,
         code: str,
-        redeemer_user_id: int,
-        redeemer_role: str,
+        caller: TokenPayload,
         institution_id: int | None,
     ) -> QRRedeemResponse:
+        resolved_institution_id = self._resolve_redeem_institution_id(
+            caller, institution_id
+        )
+        institution = await self.institution_repo.get_by_id(resolved_institution_id)
+        if not institution or institution.deleted_at or not institution.is_active:
+            raise NotFoundError("Institución no encontrada")
+
         redeem_result = await self.session.execute(
             text("SELECT fn_qr_redeem(:code)"), {"code": code}
         )
@@ -59,6 +97,11 @@ class QRRecordAccessService:
         patient = result.scalar_one_or_none()
         if patient is None:
             raise NotFoundError("Paciente no encontrado")
+
+        await self.patient_institution_repo.ensure_linked(
+            patient_id=patient.id,
+            institution_id=resolved_institution_id,
+        )
 
         return QRRedeemResponse(
             message="Código canjeado exitosamente",

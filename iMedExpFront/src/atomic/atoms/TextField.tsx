@@ -30,6 +30,8 @@ type TextFieldProps = {
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   rightSlot?: ReactNode;
   height?: number;
+  multiline?: boolean;
+  minHeight?: number;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -45,6 +47,8 @@ export function TextField({
   autoCapitalize = "sentences",
   rightSlot,
   height = 46,
+  multiline = false,
+  minHeight = 92,
   style
 }: TextFieldProps) {
   const [focused, setFocused] = useState(false);
@@ -53,8 +57,10 @@ export function TextField({
     <View
       style={[
         styles.wrap,
+        multiline
+          ? { minHeight, alignItems: "stretch", paddingVertical: 10 }
+          : { height },
         {
-          height,
           borderColor: focused ? colors.accent : colors.rule,
           paddingLeft: icon ? 38 : 14,
           paddingRight: rightSlot ? 44 : 14
@@ -68,7 +74,7 @@ export function TextField({
         </View>
       ) : null}
       <TextInput
-        style={[styles.input, webNoOutline]}
+        style={[styles.input, multiline && styles.inputMultiline, webNoOutline]}
         placeholder={placeholder}
         placeholderTextColor={colors.ink3}
         value={value}
@@ -77,6 +83,8 @@ export function TextField({
         secureTextEntry={secureTextEntry}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        multiline={multiline}
+        textAlignVertical={multiline ? "top" : "auto"}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
       />
@@ -128,5 +136,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.ink,
     padding: 0
+  },
+  inputMultiline: {
+    alignSelf: "stretch",
+    lineHeight: 20
   }
 });

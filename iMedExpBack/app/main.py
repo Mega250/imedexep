@@ -19,6 +19,7 @@ from app.api.v1 import (
     clinical_history,
     clinical_readings,
     consultations,
+    diseases,
     doctor,
     emergency_contacts,
     institutions,
@@ -176,6 +177,7 @@ app.include_router(invitations.router, prefix="/api/v1")
 app.include_router(prescriptions.router, prefix="/api/v1")
 app.include_router(vitals.router, prefix="/api/v1")
 app.include_router(medications.router, prefix="/api/v1")
+app.include_router(diseases.router, prefix="/api/v1")
 app.include_router(menstrual_cycles.router, prefix="/api/v1")
 app.include_router(personal_log.router, prefix="/api/v1")
 

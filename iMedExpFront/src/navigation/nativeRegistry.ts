@@ -36,6 +36,8 @@ import { DocQRMobilePage } from "@/atomic/pages/doctor/DocQRMobilePage";
 import { DocShiftsMobilePage } from "@/atomic/pages/doctor/DocShiftsMobilePage";
 import { DocVitalsMobilePage } from "@/atomic/pages/doctor/DocVitalsMobilePage";
 import { DoctorActiveMobilePage } from "@/atomic/pages/doctor/DoctorActiveMobilePage";
+import { MConsultaRegistroPage } from "@/atomic/pages/doctor/MConsultaRegistroPage";
+import { MConsultaDetallePage } from "@/atomic/pages/doctor/MConsultaDetallePage";
 import { MAgendaPage } from "@/atomic/pages/doctor/MAgendaPage";
 import { MConsultasPage } from "@/atomic/pages/doctor/MConsultasPage";
 import { MPatientsPage } from "@/atomic/pages/doctor/MPatientsPage";
@@ -89,6 +91,8 @@ export const nativeScreens: Record<string, ComponentType> = {
   "pat-perfil": PPerfilPage,
   "dash-mob": DashboardMobilePage,
   "active-mob": DoctorActiveMobilePage,
+  "consulta-registro": MConsultaRegistroPage,
+  "consulta-detalle": MConsultaDetallePage,
   "mob-patients": MPatientsPage,
   "mob-agenda": MAgendaPage,
   "mob-consultas": MConsultasPage,

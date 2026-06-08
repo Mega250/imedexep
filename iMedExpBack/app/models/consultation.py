@@ -33,7 +33,7 @@ class Consultation(Base):
     symptoms: Mapped[str | None] = mapped_column(Text, nullable=True)
     medical_notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     sensitivity_level: Mapped[int] = mapped_column(SmallInteger, nullable=False, server_default="1")
-    specialty_data: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    specialty_data: Mapped[dict | None] = mapped_column(JSONB(none_as_null=True), nullable=True)
     signature_hash: Mapped[str | None] = mapped_column(Text, nullable=True)
     signed_at: Mapped[datetime | None] = mapped_column(
         TIMESTAMP(timezone=True), nullable=True

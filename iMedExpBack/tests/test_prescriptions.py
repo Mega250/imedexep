@@ -1,6 +1,8 @@
 import pytest
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import AsyncMock, patch
 from app.core.security import create_access_token
+from app.services.prescription_service import PrescriptionService
 
 def get_auth_headers(role="doctor"):
     token = create_access_token(user_id=1, role=role, institution_id=1)
@@ -80,3 +82,27 @@ async def test_add_treatment_missing_fields(client):
     payload = {"start_date": "2026-01-01", "medication_id": 1}
     response = await client.post("/api/v1/prescriptions/1/treatments", json=payload, headers=get_auth_headers())
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+@patch("app.utils.email.send_prescription_to_patient", new_callable=AsyncMock)
+async def test_send_to_patient_uses_notification_email_function(mock_send):
+    session = AsyncMock()
+    session.execute = AsyncMock(
+        return_value=SimpleNamespace(scalar_one_or_none=lambda: "damian@gmail.com")
+    )
+    service = PrescriptionService(session)
+    service.repo.get_by_id_full = AsyncMock(
+        return_value=SimpleNamespace(id=2, patient_id=2)
+    )
+
+    result = await service.send_to_patient(2)
+
+    sql = str(session.execute.await_args.args[0])
+    assert "fn_patient_notification_email" in sql
+    assert session.execute.await_args.args[1] == {"patient_id": 2}
+    mock_send.assert_awaited_once_with(
+        patient_email="damian@gmail.com",
+        prescription_id=2,
+    )
+    assert result["channel"] == "email"
