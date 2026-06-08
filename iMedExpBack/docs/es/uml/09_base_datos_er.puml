@@ -1,0 +1,203 @@
+@startuml
+title iMedExp Backend - Modelo E-R de Base de Datos
+hide circle
+skinparam linetype ortho
+skinparam shadowing false
+
+entity "core.users" as USERS {
+  * id : integer <<PK>>
+  --
+  email : varchar <<UK>>
+  password_hash : varchar
+  role : enum
+  is_active : boolean
+  is_verified : boolean
+  created_at : timestamp
+}
+
+entity "core.patients" as PATIENTS {
+  * id : integer <<PK>>
+  --
+  user_id : integer <<FK>>
+  first_name : varchar
+  last_name : varchar
+  birth_date : date
+  gender : enum
+  curp_encrypted : text
+}
+
+entity "core.doctors" as DOCTORS {
+  * id : integer <<PK>>
+  --
+  user_id : integer <<FK>>
+  professional_license : varchar
+  specialty : varchar
+}
+
+entity "core.institutions" as INSTITUTIONS {
+  * id : integer <<PK>>
+  --
+  name : varchar
+  type : enum
+  email : varchar
+  is_active : boolean
+}
+
+entity "core.secretaries" as SECRETARIES {
+  * id : integer <<PK>>
+  --
+  user_id : integer <<FK>>
+  institution_id : integer <<FK>>
+  is_active : boolean
+}
+
+entity "core.patient_institutions" as PATIENT_INSTITUTIONS {
+  * patient_id : integer <<PK, FK>>
+  * institution_id : integer <<PK, FK>>
+  --
+  created_at : timestamp
+}
+
+entity "core.appointments" as APPOINTMENTS {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  doctor_id : integer <<FK>>
+  institution_id : integer <<FK>>
+  scheduled_at : timestamp
+  status : enum
+}
+
+entity "clinical.consultations" as CONSULTATIONS {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  doctor_id : integer <<FK>>
+  institution_id : integer <<FK>>
+  appointment_id : integer <<FK>>
+  chief_complaint : text
+  notes : text
+  created_at : timestamp
+}
+
+entity "clinical.diagnosis" as DIAGNOSIS {
+  * id : integer <<PK>>
+  --
+  consultation_id : integer <<FK>>
+  disease_id : integer <<FK>>
+  diagnosis_type : varchar
+  notes : text
+}
+
+entity "catalog.diseases" as DISEASES {
+  * id : integer <<PK>>
+  --
+  code : varchar
+  name : varchar
+  catalog : varchar
+}
+
+entity "clinical.vital_signs" as VITAL_SIGNS {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  temperature : numeric
+  heart_rate : integer
+  recorded_at : timestamp
+}
+
+entity "clinical.prescriptions" as PRESCRIPTIONS {
+  * id : integer <<PK>>
+  --
+  consultation_id : integer <<FK>>
+  patient_id : integer <<FK>>
+  doctor_id : integer <<FK>>
+  is_signed : boolean
+  signed_at : timestamp
+}
+
+entity "clinical.treatment_details" as TREATMENT_DETAILS {
+  * id : integer <<PK>>
+  --
+  prescription_id : integer <<FK>>
+  medication_id : integer <<FK>>
+  dose : varchar
+  frequency : varchar
+  duration : varchar
+  status : enum
+}
+
+entity "catalog.medications" as MEDICATIONS {
+  * id : integer <<PK>>
+  --
+  name : varchar
+  active_ingredient : varchar
+  presentation : varchar
+}
+
+entity "clinical.menstrual_cycles" as MENSTRUAL_CYCLES {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  start_date : date
+  end_date : date
+  flow : enum
+  symptoms : jsonb
+  notes : text
+}
+
+entity "core.emergency_contacts" as EMERGENCY_CONTACTS {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  name : varchar
+  relationship : varchar
+  phone : varchar
+}
+
+entity "core.qr_record_access" as QR_RECORD_ACCESS {
+  * id : integer <<PK>>
+  --
+  patient_id : integer <<FK>>
+  created_by : integer <<FK>>
+  token_hash : varchar
+  expires_at : timestamp
+  redeemed_at : timestamp
+}
+
+entity "audit.audit_log" as AUDIT_LOG {
+  * id : bigint <<PK>>
+  --
+  schema_name : varchar
+  table_name : varchar
+  action : varchar
+  row_pk : jsonb
+  changed_at : timestamp
+}
+
+USERS ||--o| PATIENTS : perfil
+USERS ||--o| DOCTORS : perfil
+USERS ||--o| SECRETARIES : perfil
+INSTITUTIONS ||--o{ SECRETARIES : emplea
+PATIENTS ||--o{ PATIENT_INSTITUTIONS : pertenece
+INSTITUTIONS ||--o{ PATIENT_INSTITUTIONS : atiende
+PATIENTS ||--o{ APPOINTMENTS : agenda
+DOCTORS ||--o{ APPOINTMENTS : atiende
+INSTITUTIONS ||--o{ APPOINTMENTS : sede
+PATIENTS ||--o{ CONSULTATIONS : expediente
+DOCTORS ||--o{ CONSULTATIONS : registra
+INSTITUTIONS ||--o{ CONSULTATIONS : contexto
+APPOINTMENTS ||--o| CONSULTATIONS : origina
+CONSULTATIONS ||--o{ DIAGNOSIS : contiene
+DISEASES ||--o{ DIAGNOSIS : clasifica
+PATIENTS ||--o{ VITAL_SIGNS : mediciones
+CONSULTATIONS ||--o| PRESCRIPTIONS : receta
+PATIENTS ||--o{ PRESCRIPTIONS : recibe
+DOCTORS ||--o{ PRESCRIPTIONS : emite
+PRESCRIPTIONS ||--o{ TREATMENT_DETAILS : incluye
+MEDICATIONS ||--o{ TREATMENT_DETAILS : referencia
+PATIENTS ||--o{ MENSTRUAL_CYCLES : registra
+PATIENTS ||--o{ EMERGENCY_CONTACTS : contacto
+PATIENTS ||--o{ QR_RECORD_ACCESS : acceso
+USERS ||--o{ QR_RECORD_ACCESS : crea
+@enduml

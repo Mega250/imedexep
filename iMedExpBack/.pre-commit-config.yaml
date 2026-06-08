@@ -1,0 +1,19 @@
+repos:
+  - repo: local
+    hooks:
+      - id: pytest-check
+        name: Filtro Anti-Mamadas
+        description: "Se encarga de ejecutar los tests antes de que suceda una pendejada"
+        entry: bash -c "docker exec -e PYTHONPATH=/app -e COVERAGE_FILE=/tmp/.coverage med_api pytest /app/tests -q --cov=app --cov-fail-under=65"
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/PyCQA/pydocstyle
+    rev: 6.3.0
+    hooks:
+      - id: pydocstyle
+        name: Linter de Documentación (Docstrings)
+        description: "Obliga a que todos los endpoints y módulos estén bien documentados."
+        args: ["--convention=google", "--add-ignore=D100,D104"]
+        files: ^app/api/

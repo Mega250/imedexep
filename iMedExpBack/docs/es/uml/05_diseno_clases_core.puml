@@ -1,0 +1,147 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Clases Core
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty methods
+
+enum UserRole {
+  patient
+  doctor
+  secretary
+  institution_admin
+  superadmin
+}
+
+enum InstitutionType {
+  hospital
+  clinic
+  laboratory
+  other
+}
+
+class User {
+  +id: int
+  +email: str
+  +password_hash: str
+  +role: UserRole
+  +is_active: bool
+  +is_verified: bool
+  +created_at: datetime
+  +updated_at: datetime
+}
+
+class Patient {
+  +id: int
+  +user_id: int
+  +first_name: str
+  +last_name: str
+  +birth_date: date
+  +gender: GenderType
+  +blood_type: BloodType
+  +curp_encrypted: str
+}
+
+class Doctor {
+  +id: int
+  +user_id: int
+  +first_name: str
+  +last_name: str
+  +professional_license: str
+  +specialty: str
+  +phone: str
+}
+
+class Secretary {
+  +id: int
+  +user_id: int
+  +institution_id: int
+  +first_name: str
+  +last_name: str
+  +is_active: bool
+}
+
+class Institution {
+  +id: int
+  +name: str
+  +type: InstitutionType
+  +email: str
+  +phone: str
+  +is_active: bool
+}
+
+class DoctorShift {
+  +id: int
+  +doctor_id: int
+  +institution_id: int
+  +weekday: int
+  +start_time: time
+  +end_time: time
+}
+
+class SecretaryDoctor {
+  +id: int
+  +secretary_id: int
+  +doctor_id: int
+  +assigned_by: int
+}
+
+class PatientInstitution {
+  +patient_id: int
+  +institution_id: int
+  +created_at: datetime
+}
+
+class Appointment {
+  +id: int
+  +patient_id: int
+  +doctor_id: int
+  +institution_id: int
+  +scheduled_at: datetime
+  +status: AppointmentStatus
+  +reason: str
+}
+
+class EmergencyContact {
+  +id: int
+  +patient_id: int
+  +name: str
+  +relationship: str
+  +phone: str
+}
+
+class QRRecordAccess {
+  +id: int
+  +patient_id: int
+  +created_by: int
+  +token_hash: str
+  +expires_at: datetime
+  +redeemed_at: datetime
+}
+
+class InstitutionInvitation {
+  +id: int
+  +institution_id: int
+  +doctor_id: int
+  +status: str
+  +expires_at: datetime
+}
+
+User "1" -- "0..1" Patient
+User "1" -- "0..1" Doctor
+User "1" -- "0..1" Secretary
+Institution "1" -- "0..*" Secretary
+Institution "1" -- "0..*" DoctorShift
+Doctor "1" -- "0..*" DoctorShift
+Secretary "1" -- "0..*" SecretaryDoctor
+Doctor "1" -- "0..*" SecretaryDoctor
+User "1" -- "0..*" SecretaryDoctor : assigned_by
+Patient "1" -- "0..*" PatientInstitution
+Institution "1" -- "0..*" PatientInstitution
+Patient "1" -- "0..*" Appointment
+Doctor "1" -- "0..*" Appointment
+Institution "1" -- "0..*" Appointment
+Patient "1" -- "0..*" EmergencyContact
+Patient "1" -- "0..*" QRRecordAccess
+Institution "1" -- "0..*" InstitutionInvitation
+Doctor "1" -- "0..*" InstitutionInvitation
+@enduml

@@ -1,0 +1,48 @@
+version: 1
+debate_style: independent_then_judge
+freeform_debate: false
+human_appeal_enabled: true
+enable_planner_rebuttal: true
+roles:
+  scout:
+    purpose: "Reduce el catalogo de tools, detecta intencion y propone candidatas."
+    behavior_profile: cheap_precise
+    output_mode: json
+    max_reasoning_budget: low
+    risk_tolerance: low
+    passes: 1
+  planner:
+    purpose: "Disena el agente: mision, inputs, memoria, tools, workflow, criterios, riesgos."
+    behavior_profile: creative_structured
+    output_mode: json
+    max_reasoning_budget: medium
+    risk_tolerance: medium
+    passes: 1
+  methodologist:
+    purpose: "Revisa estructura, metodologia, criterios, taxonomias y consistencia."
+    behavior_profile: structured_review
+    output_mode: json
+    max_reasoning_budget: medium
+    risk_tolerance: low
+    passes: 1
+  skeptic:
+    purpose: "Ataca: tools innecesarias, riesgos, costo, dependencias peligrosas."
+    behavior_profile: adversarial_precise
+    output_mode: json
+    max_reasoning_budget: medium
+    risk_tolerance: very_low
+    passes: 1
+  judge:
+    purpose: "Produce el AgentSpec final dentro de los permisos. No amplia permisos."
+    behavior_profile: strict_decision
+    output_mode: strict_json
+    max_reasoning_budget: high
+    risk_tolerance: very_low
+    passes: 1
+  appeal_judge:
+    purpose: "Resuelve una objecion humana acotada: defend_previous, revise o ask_human."
+    behavior_profile: strict_revision
+    output_mode: strict_json
+    max_reasoning_budget: high
+    risk_tolerance: very_low
+    passes: 1

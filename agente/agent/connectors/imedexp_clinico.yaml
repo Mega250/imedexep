@@ -1,0 +1,69 @@
+manifest_id: imedexp_clinico
+owner: "iMedExp (historial clinico de pacientes) - conector institucional de SOLO LECTURA, PHI"
+base_url: "http://localhost:8000"
+auth:
+  type: bearer
+  secret_ref: imedexp_token
+data_classification: patient_health_data_phi
+risk_level: C
+requires_human_developer: true
+requires_audit: true
+allowed_roles: [agent_runtime]
+state: active
+allowed_endpoints:
+  - name: get_patient
+    path: "/api/v1/patients/{patient_id}"
+    method: GET
+    pii_level: high
+    response_fields: [id, first_name, last_name, date_of_birth, gender, blood_type, sensitivity_level]
+    rate_limit_per_min: 30
+  - name: get_patient_full
+    path: "/api/v1/patients/{patient_id}/full"
+    method: GET
+    pii_level: high
+    response_fields: [id, first_name, last_name, date_of_birth, gender, blood_type, weight_kg, height_cm, bmi, systolic_bp, diastolic_bp, heart_rate, temperature_celsius, oxygen_saturation, glucose_mg_dl, glucose_risk]
+    rate_limit_per_min: 30
+  - name: list_consultations
+    path: "/api/v1/consultations/"
+    method: GET
+    pii_level: medium
+    rate_limit_per_min: 30
+  - name: get_consultation
+    path: "/api/v1/consultations/{consultation_id}"
+    method: GET
+    pii_level: medium
+    response_fields: [id, patient_id, doctor_id, consulted_at, chief_complaint, symptoms, medical_notes, specialty_data]
+    rate_limit_per_min: 30
+  - name: list_diagnoses
+    path: "/api/v1/consultations/{consultation_id}/diagnosis"
+    method: GET
+    pii_level: medium
+    rate_limit_per_min: 30
+  - name: get_vitals
+    path: "/api/v1/vitals/patient/{patient_id}"
+    method: GET
+    pii_level: medium
+    rate_limit_per_min: 30
+  - name: get_latest_vitals
+    path: "/api/v1/vitals/patient/{patient_id}/latest"
+    method: GET
+    pii_level: medium
+    rate_limit_per_min: 30
+  - name: get_prescription
+    path: "/api/v1/prescriptions/consultation/{consultation_id}"
+    method: GET
+    pii_level: medium
+    rate_limit_per_min: 30
+  - name: search_medications
+    path: "/api/v1/medications/search"
+    method: GET
+    pii_level: none
+    rate_limit_per_min: 60
+forbidden_endpoints:
+  - "POST /api/v1/patients/"
+  - "PATCH /api/v1/patients/{patient_id}"
+  - "DELETE /api/v1/patients/{patient_id}"
+  - "POST /api/v1/consultations/"
+  - "POST /api/v1/consultations/{consultation_id}/diagnosis"
+  - "POST /api/v1/prescriptions/consultation/{consultation_id}"
+  - "POST /api/v1/vitals/"

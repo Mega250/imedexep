@@ -1,0 +1,39 @@
+@startuml
+title iMedExp Backend - Secuencia UML: Consulta Clinica con Diagnostico y Receta
+skinparam shadowing false
+autonumber
+
+actor Doctor
+boundary "ConsultationsRouter" as Router
+control "Auth/RLS Dependencies" as Auth
+control "ConsultationService" as ConsultationService
+control "DiagnosisService" as DiagnosisService
+control "PrescriptionService" as PrescriptionService
+database "PostgreSQL" as DB
+
+Doctor -> Router : POST /api/v1/consultations/
+Router -> Auth : validar token, rol doctor y contexto RLS
+Auth -> DB : SET app.user_id, app.role, app.institution_id
+Router -> ConsultationService : create_consultation(payload)
+ConsultationService -> DB : INSERT clinical.consultations
+DB --> ConsultationService : Consultation
+ConsultationService --> Router : ConsultationResponse
+Router --> Doctor : 201 Created
+
+Doctor -> Router : POST /api/v1/consultations/{id}/diagnosis
+Router -> Auth : validar doctor + RLS
+Router -> DiagnosisService : create_diagnosis(consultation_id, payload)
+DiagnosisService -> DB : SELECT consultation + disease
+DiagnosisService -> DB : INSERT clinical.diagnosis
+DB --> DiagnosisService : Diagnosis
+DiagnosisService --> Router : DiagnosisResponse
+Router --> Doctor : 201 Created
+
+Doctor -> Router : POST /api/v1/prescriptions/consultation/{id}
+Router -> Auth : validar doctor + RLS
+Router -> PrescriptionService : create_prescription(consultation_id, payload)
+PrescriptionService -> DB : INSERT clinical.prescriptions
+DB --> PrescriptionService : Prescription
+PrescriptionService --> Router : PrescriptionResponse
+Router --> Doctor : 201 Created
+@enduml

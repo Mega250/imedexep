@@ -1,0 +1,10 @@
+pack_id: identity_core
+description: "Identity, Permission y Secrets + Human Approval. Los secretos se inyectan en runtime y nunca llegan al LLM."
+tools:
+  - auth.whoami
+  - auth.check_permission
+  - secrets.get_runtime_secret
+  - permissions.require_human_approval
+  - approval.request
+  - approval.wait
+  - approval.record_decision

@@ -1,0 +1,50 @@
+version: 1
+active: piper_es
+engines:
+  piper:
+    type: piper
+    models_dir_env: GUMI_PIPER_MODELS_DIR
+    default_models_dir: workspace/piper_models
+  xtts:
+    type: xtts
+    default_model_id: tts_models/multilingual/multi-dataset/xtts_v2
+    reference_dir_env: GUMI_TTS_REFERENCE_DIR
+    default_reference_dir: workspace/tts_refs
+    device: cpu
+  openai_compat:
+    type: openai_compat
+    base_url_env: GUMI_TTS_HTTP_BASE_URL
+    api_key_env: GUMI_TTS_HTTP_API_KEY
+    default_model_id: tts-1
+voices:
+  piper_es:
+    engine: piper
+    name: Voz puente local en espanol (Piper)
+    language: es
+    languages: [es]
+    model_id: es_ES-sharvard-medium
+    sample_rate: 22050
+    requires_reference: false
+    commercial_use: true
+    license: mit
+  gumi_megpoid_xtts:
+    engine: xtts
+    name: GUMI Megpoid clonada (XTTS-v2)
+    language: es
+    languages: [es, ja]
+    model_id: tts_models/multilingual/multi-dataset/xtts_v2
+    reference_audio: gumi_megpoid.wav
+    sample_rate: 24000
+    requires_reference: true
+    commercial_use: false
+    license: clon_referencia_propia_licencia_pendiente
+  openai_speech:
+    engine: openai_compat
+    name: Servicio TTS HTTP compatible OpenAI
+    language: es
+    languages: [es, ja]
+    model_id: tts-1
+    sample_rate: 24000
+    requires_reference: false
+    commercial_use: true
+    license: proveedor_externo

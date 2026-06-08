@@ -1,0 +1,38 @@
+version: 1
+profiles:
+  cheap_precise:
+    creativity: 0.15
+    determinism: 0.85
+    verbosity: 0.25
+    exploration: 0.2
+    strictness: 0.8
+  creative_structured:
+    creativity: 0.55
+    determinism: 0.45
+    verbosity: 0.65
+    exploration: 0.65
+    strictness: 0.55
+  structured_review:
+    creativity: 0.25
+    determinism: 0.75
+    verbosity: 0.55
+    exploration: 0.35
+    strictness: 0.8
+  adversarial_precise:
+    creativity: 0.25
+    determinism: 0.75
+    verbosity: 0.5
+    exploration: 0.45
+    strictness: 0.9
+  strict_decision:
+    creativity: 0.05
+    determinism: 0.95
+    verbosity: 0.35
+    exploration: 0.1
+    strictness: 0.98
+  strict_revision:
+    creativity: 0.1
+    determinism: 0.9
+    verbosity: 0.4
+    exploration: 0.2
+    strictness: 0.95

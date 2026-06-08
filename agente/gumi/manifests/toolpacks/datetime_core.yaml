@@ -1,0 +1,9 @@
+pack_id: datetime_core
+description: "Fechas y horas: hora actual, interpretar texto a fecha, formatear, diferencia entre fechas, aritmetica y dia de la semana."
+tools:
+  - datetime.now
+  - datetime.parse
+  - datetime.format
+  - datetime.diff
+  - datetime.add
+  - datetime.weekday

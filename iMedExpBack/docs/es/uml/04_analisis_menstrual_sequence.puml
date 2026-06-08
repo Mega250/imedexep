@@ -1,0 +1,33 @@
+@startuml
+title iMedExp Backend - Secuencia UML: Registro y Prediccion Menstrual
+skinparam shadowing false
+autonumber
+
+actor "Paciente o Staff Autorizado" as Actor
+boundary "MenstrualCyclesRouter" as Router
+control "Auth/RLS Dependencies" as Auth
+control "MenstrualCycleService" as Service
+control "MenstrualCyclePredictor" as Predictor
+database "PostgreSQL" as DB
+
+Actor -> Router : POST /api/v1/menstrual-cycles/
+Router -> Auth : validar identidad, rol y acceso al paciente
+Auth -> DB : SET contexto RLS
+Router -> Service : create_cycle(payload)
+Service -> Service : validar fechas, flujo y sintomas
+Service -> DB : INSERT clinical.menstrual_cycles
+DB --> Service : MenstrualCycle
+Service --> Router : MenstrualCycleResponse
+Router --> Actor : 201 Created
+
+Actor -> Router : GET /api/v1/menstrual-cycles/patient/{id}/prediction
+Router -> Auth : validar acceso RLS al paciente
+Router -> Service : predict_next_cycle(patient_id)
+Service -> DB : SELECT cycles ORDER BY start_date
+DB --> Service : historial de ciclos
+Service -> Predictor : predict(cycles)
+Predictor -> Predictor : calcular intervalos, variabilidad y confianza
+Predictor --> Service : prediccion personalizada
+Service --> Router : MenstrualCyclePredictionResponse
+Router --> Actor : 200 OK
+@enduml

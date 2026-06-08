@@ -1,0 +1,32 @@
+version: 1
+defaults:
+  unknown_capability: block
+capabilities:
+  agent_creation:
+    default: block
+    allowed_only_for: [gumi_builder]
+    requirements: [human_developer, human_approval, audit]
+  tool_creation:
+    default: restricted
+    requirements: [sandbox, tests, human_approval, audit]
+  database_write:
+    default: restricted
+    requirements: [data_manifest_confirmed, approval, audit, scopes]
+  external_api_write:
+    default: restricted
+    requirements: [api_manifest, scopes, approval, audit]
+  browser_automation:
+    default: restricted
+    requirements: [multimodal_tier_only, domain_allowlist, human_approval_for_writes, audit]
+  medical_diagnosis:
+    default: forbidden_for_autonomous_agents
+    requirements: [clinical_safety_gate, human_review]
+  legal_filing:
+    default: forbidden_without_professional_review
+    requirements: [human_review, audit]
+  financial_transaction:
+    default: forbidden_without_explicit_user_confirmation
+    requirements: [human_approval, audit, scopes]
+  mass_messaging:
+    default: restricted
+    requirements: [anti_spam_policy, recipient_consent, approval]

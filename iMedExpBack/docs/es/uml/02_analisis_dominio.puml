@@ -1,0 +1,112 @@
+@startuml
+title iMedExp Backend - Modelo de Analisis del Dominio
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+package "Identidad y acceso" {
+  class "Auth API" as AuthAPI <<boundary>>
+  class "AuthService" as AuthService <<control>>
+  class "User" as User <<entity>>
+  class "EmailVerificationCode" as EmailCode <<entity>>
+}
+
+package "Administracion institucional" {
+  class "Institutions API" as InstitutionAPI <<boundary>>
+  class "InstitutionService" as InstitutionService <<control>>
+  class "Institution" as Institution <<entity>>
+  class "InstitutionInvitation" as Invitation <<entity>>
+}
+
+package "Personas y agenda" {
+  class "Patients API" as PatientAPI <<boundary>>
+  class "Appointments API" as AppointmentAPI <<boundary>>
+  class "PatientService" as PatientService <<control>>
+  class "AppointmentService" as AppointmentService <<control>>
+  class "Patient" as Patient <<entity>>
+  class "Doctor" as Doctor <<entity>>
+  class "Secretary" as Secretary <<entity>>
+  class "Appointment" as Appointment <<entity>>
+}
+
+package "Atencion clinica" {
+  class "Consultations API" as ConsultationAPI <<boundary>>
+  class "Prescriptions API" as PrescriptionAPI <<boundary>>
+  class "Vitals API" as VitalsAPI <<boundary>>
+  class "ConsultationService" as ConsultationService <<control>>
+  class "PrescriptionService" as PrescriptionService <<control>>
+  class "VitalSignService" as VitalSignService <<control>>
+  class "Consultation" as Consultation <<entity>>
+  class "Diagnosis" as Diagnosis <<entity>>
+  class "VitalSign" as VitalSign <<entity>>
+  class "Prescription" as Prescription <<entity>>
+  class "TreatmentDetail" as TreatmentDetail <<entity>>
+}
+
+package "Salud menstrual" {
+  class "MenstrualCycles API" as MenstrualAPI <<boundary>>
+  class "MenstrualCycleService" as MenstrualService <<control>>
+  class "MenstrualCyclePredictor" as MenstrualPredictor <<control>>
+  class "MenstrualCycle" as MenstrualCycle <<entity>>
+}
+
+package "Catalogos y acceso temporal" {
+  class "Medications API" as MedicationAPI <<boundary>>
+  class "QR Access API" as QRAPI <<boundary>>
+  class "MedicationService" as MedicationService <<control>>
+  class "QRRecordAccessService" as QRService <<control>>
+  class "Medication" as Medication <<entity>>
+  class "Disease" as Disease <<entity>>
+  class "QRRecordAccess" as QRRecordAccess <<entity>>
+}
+
+AuthAPI --> AuthService
+AuthService --> User
+AuthService --> EmailCode
+
+InstitutionAPI --> InstitutionService
+InstitutionService --> Institution
+InstitutionService --> Invitation
+
+PatientAPI --> PatientService
+AppointmentAPI --> AppointmentService
+PatientService --> Patient
+PatientService --> Institution
+AppointmentService --> Appointment
+AppointmentService --> Patient
+AppointmentService --> Doctor
+
+ConsultationAPI --> ConsultationService
+PrescriptionAPI --> PrescriptionService
+VitalsAPI --> VitalSignService
+ConsultationService --> Consultation
+ConsultationService --> Diagnosis
+PrescriptionService --> Prescription
+PrescriptionService --> TreatmentDetail
+VitalSignService --> VitalSign
+
+MenstrualAPI --> MenstrualService
+MenstrualService --> MenstrualCycle
+MenstrualService --> MenstrualPredictor
+MenstrualPredictor --> MenstrualCycle
+
+MedicationAPI --> MedicationService
+QRAPI --> QRService
+MedicationService --> Medication
+QRService --> QRRecordAccess
+QRRecordAccess --> Patient
+Diagnosis --> Disease
+TreatmentDetail --> Medication
+
+User "1" -- "0..1" Patient
+User "1" -- "0..1" Doctor
+User "1" -- "0..1" Secretary
+Patient "1" -- "0..*" Appointment
+Doctor "1" -- "0..*" Appointment
+Patient "1" -- "0..*" Consultation
+Doctor "1" -- "0..*" Consultation
+Patient "1" -- "0..*" MenstrualCycle
+Patient "1" -- "0..*" VitalSign
+Consultation "1" -- "0..*" Diagnosis
+Consultation "1" -- "0..1" Prescription
+@enduml

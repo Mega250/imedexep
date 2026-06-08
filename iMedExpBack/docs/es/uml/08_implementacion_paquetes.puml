@@ -1,0 +1,69 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Paquetes
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+package "app" {
+  package "api.v1" as API {
+    class "auth.py"
+    class "patients.py"
+    class "doctor.py"
+    class "institutions.py"
+    class "appointments.py"
+    class "consultations.py"
+    class "prescriptions.py"
+    class "vitals.py"
+    class "menstrual_cycles.py"
+  }
+
+  package "api.deps" as Deps
+  package "core" as Core {
+    class "config.py"
+    class "database.py"
+    class "security.py"
+    class "middleware.py"
+    class "metrics.py"
+  }
+
+  package "schemas" as Schemas
+  package "services" as Services
+  package "repositories" as Repositories
+  package "models" as Models
+  package "utils" as Utils
+}
+
+package "sql" as SQL {
+  class "001Extensions.sql"
+  class "005TablesCore.sql"
+  class "006TablesClinical.sql"
+  class "008Functions.sql"
+  class "009Triggers.sql"
+  class "010RLSPolicies.sql"
+  class "012Indexes.sql"
+}
+
+package "infra" as Infra {
+  package "helm/imedexp-api" as Helm
+  package "terraform/kubernetes" as Terraform
+  package "monitoring" as Monitoring
+}
+
+package "tests" as Tests
+
+API ..> Deps
+API ..> Schemas
+API ..> Services
+Deps ..> Core
+Deps ..> Models
+Services ..> Repositories
+Services ..> Schemas
+Repositories ..> Models
+Repositories ..> Core
+Models ..> Core
+Core ..> SQL
+Tests ..> API
+Tests ..> Services
+Tests ..> Models
+Terraform ..> Helm
+Helm ..> Monitoring
+@enduml

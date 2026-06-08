@@ -1,0 +1,6 @@
+pack_id: audit_core
+description: "Audit Ledger append-only: rastro de eventos, tool calls, decisiones y aprobaciones."
+tools:
+  - audit.log_event
+  - audit.log_tool_call
+  - audit.export_run_trace

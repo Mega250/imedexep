@@ -1,0 +1,6 @@
+pack_id: outbox_core
+description: "Notification/Outbox: separa generar mensaje de enviar. Envio solo tras aprobacion."
+tools:
+  - outbox.create_draft
+  - outbox.send_after_approval
+  - outbox.list_pending

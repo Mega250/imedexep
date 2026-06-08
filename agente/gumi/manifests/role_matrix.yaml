@@ -1,0 +1,22 @@
+version: 1
+roles:
+  admin:
+    allowed_tools: ["*"]
+    forbidden_tools: []
+    scopes: ["*"]
+  school_admin:
+    allowed_tools: [consultar_alumno_por_matricula, consultar_calificaciones, metricas_alumnos_por_carrera]
+    forbidden_tools: []
+    scopes: [alumnos.read, calificaciones.read, alumnos.read.agg]
+  authorized_teacher:
+    allowed_tools: [consultar_alumno_por_matricula, consultar_calificaciones]
+    forbidden_tools: [metricas_alumnos_por_carrera]
+    scopes: [alumnos.read, calificaciones.read]
+  student_self_service:
+    allowed_tools: [consultar_alumno_por_matricula]
+    forbidden_tools: [consultar_calificaciones, metricas_alumnos_por_carrera]
+    scopes: [alumnos.read]
+  agent_runtime:
+    allowed_tools: [tipos_de_cambio, buscar_publicaciones]
+    forbidden_tools: [compile_agent, register_agent, create_agent]
+    scopes: []

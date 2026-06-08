@@ -1,0 +1,94 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16-trixie
+    container_name: med_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
+      APP_API_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - med_postgres_data:/var/lib/postgresql/data
+      - ./iMedExpBack/sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - med_net
+
+  neo4j:
+    image: neo4j:latest
+    container_name: med_neo4j
+    restart: unless-stopped
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER}/${NEO4J_PASSWORD}
+      NEO4J_PLUGINS: '["apoc", "graph-data-science"]'
+    ports:
+      - "127.0.0.1:7474:7474"
+      - "127.0.0.1:7687:7687"
+    volumes:
+      - med_neo4j_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    networks:
+      - med_net
+
+  api:
+    build: ./iMedExpBack
+    container_name: med_api
+    restart: unless-stopped
+    env_file: ./iMedExpBack/.env
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: app_api
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - med_net
+
+  agente:
+    build: ./agente
+    container_name: gumi_agente
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      GUMI_AGENT_BUNDLE: /agent
+      GUMI_CONNECTOR_BASE_URL_IMEDEXP_CLINICO: http://api:8000
+      GUMI_CONNECTOR_ALLOW_HTTP: "1"
+      GUMI_IDENTITY_URL: http://api:8000/api/v1/auth/me
+      GUMI_NEO4J_URI: bolt://neo4j:7687
+      GUMI_NEO4J_USER: ${NEO4J_USER}
+      GUMI_NEO4J_PASS: ${NEO4J_PASSWORD}
+      GUMI_CONV_DSN: postgresql://postgres:${POSTGRES_SUPERUSER_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      GUMI_RAG_DSN: postgresql://postgres:${POSTGRES_SUPERUSER_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    ports:
+      - "8100:8100"
+    volumes:
+      - ./documentos:/documentos
+    depends_on:
+      - api
+      - neo4j
+    networks:
+      - med_net
+
+volumes:
+  med_postgres_data:
+  med_neo4j_data:
+
+networks:
+  med_net:
+    driver: bridge

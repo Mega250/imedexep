@@ -1,0 +1,19 @@
+version: 1
+allowlist:
+  - numpy
+module_to_package:
+  numpy: numpy
+  pandas: pandas
+  scipy: scipy
+  dateutil: python-dateutil
+  bs4: beautifulsoup4
+  sklearn: scikit-learn
+  PIL: pillow
+  reportlab: reportlab
+  yaml: pyyaml
+install:
+  enabled: true
+  require_human_approval: true
+  pin_required: true
+  hash_required: true
+pending: {}

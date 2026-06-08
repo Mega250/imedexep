@@ -1,0 +1,66 @@
+version: 1
+active: embeddinggemma_local
+pgvector_limits:
+  vector_max_dim: 2000
+  halfvec_max_dim: 4000
+embeddings:
+  embeddinggemma_local:
+    model_id: embeddinggemma
+    provider: ollama
+    native_dim: 768
+    target_dim: 768
+    vector_type: vector
+    index: hnsw
+    normalize: true
+    batch_size: 32
+    use_case: text
+    commercial_use: true
+    license: gemma
+  qwen3_embed_local:
+    model_id: qwen3-embedding:0.6b
+    provider: ollama
+    native_dim: 1024
+    target_dim: 1024
+    vector_type: vector
+    index: hnsw
+    normalize: true
+    batch_size: 32
+    use_case: text
+    commercial_use: true
+    license: apache-2.0
+  bge_m3_fallback:
+    model_id: bge-m3
+    provider: ollama
+    native_dim: 1024
+    target_dim: 1024
+    vector_type: vector
+    index: hnsw
+    normalize: true
+    batch_size: 32
+    use_case: text
+    commercial_use: true
+    license: mit
+  nv_embed_v1_api:
+    model_id: nvidia/nv-embed-v1
+    provider: nvidia
+    native_dim: 4096
+    target_dim: 4096
+    vector_type: vector
+    index: flat
+    normalize: true
+    batch_size: 16
+    use_case: text
+    commercial_use: false
+    license: non_commercial
+  nv_embedcode_7b_api:
+    model_id: nvidia/nv-embedcode-7b-v1
+    provider: nvidia
+    native_dim: 4096
+    target_dim: 4096
+    vector_type: vector
+    index: flat
+    normalize: true
+    batch_size: 16
+    use_case: code
+    commercial_use: true
+    license: nvidia-open

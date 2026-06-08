@@ -1,0 +1,8 @@
+version: 1
+headless: true
+allowed_domains:
+  - example.com
+  - wikipedia.org
+  - duckduckgo.com
+viewport: { width: 1280, height: 800 }
+max_steps: 40

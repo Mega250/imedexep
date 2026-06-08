@@ -1,0 +1,6 @@
+pack_id: sandbox_core
+description: "Safe Code/Sandbox: ejecucion aislada, tests y analisis estatico. Tool de Gumi, no generada por LLM."
+tools:
+  - sandbox.run_code
+  - sandbox.run_tests
+  - sandbox.static_analysis

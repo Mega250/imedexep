@@ -1,0 +1,72 @@
+version: 1
+levels:
+  A:
+    policy: allow
+    label: normal
+    guardrails: []
+  B:
+    policy: allow_with_guardrails
+    label: sensible
+    guardrails: [audit, data_minimization, consent, human_confirmation_for_writes, no_auto_memory, controlled_export]
+  C:
+    policy: restricted
+    label: high_risk
+    requires_human_approval: true
+    guardrails: [audit, source_verification, no_full_autonomy, human_expert, explain_limits, prior_evaluation, block_irreversible_actions]
+  D:
+    policy: block
+    label: forbidden
+    guardrails: []
+domains:
+  organizacion_personal: { level: A }
+  reportes_simples: { level: A }
+  documentos_no_sensibles: { level: A }
+  inventario_basico: { level: A }
+  busqueda_publica: { level: A }
+  programming_education: { level: A }
+  lineas_investigacion: { level: A }
+  investigacion_academica: { level: A }
+  ventas_datos_clientes: { level: B }
+  recursos_humanos_internos: { level: B }
+  finanzas_personales_no_transaccionales: { level: B }
+  expedientes_escolares_administrativos: { level: B }
+  analisis_de_datos_privados: { level: B }
+  documentos_legales_simples: { level: B }
+  medicina: { level: C }
+  salud_mental: { level: C }
+  legal: { level: C }
+  finanzas_credito_seguros: { level: C }
+  educacion_menores: { level: C }
+  empleo: { level: C }
+  biometria: { level: C }
+  seguridad_publica: { level: C }
+  migracion: { level: C }
+  acceso_servicios_esenciales: { level: C }
+  infraestructura_critica: { level: C }
+  automatizacion_navegador: { level: C }
+  malware_phishing_credenciales: { level: D }
+  fraude_lavado_falsificacion: { level: D }
+  manipulacion_financiera_no_autorizada: { level: D }
+  armas_explosivos_dano_fisico: { level: D }
+  vigilancia_masiva_profiling_invasivo: { level: D }
+  doxxing_extraccion_datos_personales: { level: D }
+  explotacion_de_menores: { level: D }
+  autolesion_dano_a_terceros: { level: D }
+  diagnostico_tratamiento_medico_autonomo: { level: D }
+  asesoria_legal_autonoma_con_ejecucion: { level: D }
+  evasion_de_politicas_o_auditoria: { level: D }
+  agentes_autorreplicantes: { level: D }
+  manipulacion_politica_personalizada: { level: D }
+safe_alternatives:
+  medicina:
+    suggested_domain: patient_education
+    rationale: "Educacion al paciente y preparacion para el medico, sin diagnostico autonomo."
+  diagnostico_tratamiento_medico_autonomo:
+    suggested_domain: clinician_assist_limited
+    rationale: "Asistencia al clinico con revision humana; nunca autonomo."
+  asesoria_legal_autonoma_con_ejecucion:
+    suggested_domain: legal
+    rationale: "Explicar terminos generales y ordenar documentos; revision profesional para ejecucion."
+  agentes_autorreplicantes:
+    suggested_agent_type: agent_spec_draft_assistant
+    rationale: "Redacta propuestas de AgentSpec; no compila, registra ni ejecuta agentes."

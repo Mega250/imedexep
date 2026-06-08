@@ -1,0 +1,8 @@
+pack_id: file_core
+description: "Archivos confinados al workspace del agente (sin traversal): leer, escribir, anexar, listar y comprobar existencia."
+tools:
+  - file.read
+  - file.write
+  - file.append
+  - file.list
+  - file.exists

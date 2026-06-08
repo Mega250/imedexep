@@ -1,0 +1,96 @@
+version: 1
+retrieval:
+  vector_threshold: 0.30
+  rrf_k: 60
+  rrf_pool_multiplier: 4
+  default_limit: 12
+  fts_language: spanish
+  complexity_thresholds:
+    simple_max_words: 4
+    medium_max_words: 12
+    complex_max_words: 24
+  hybrid_weights:
+    semantic: 350.0
+    fts_spanish: 250.0
+    fts_simple: 200.0
+    keyword: 220.0
+    trigram: 80.0
+    metadata_boost: 80.0
+  complexity:
+    simple:
+      k: 3
+      rrf_pool: 10
+      do_rewrite: false
+      do_decompose: false
+      do_hyde: false
+      do_rerank: false
+    medium:
+      k: 8
+      rrf_pool: 15
+      do_rewrite: true
+      do_decompose: false
+      do_hyde: true
+      do_rerank: true
+    complex:
+      k: 12
+      rrf_pool: 20
+      do_rewrite: true
+      do_decompose: false
+      do_hyde: true
+      do_rerank: true
+    multi_hop:
+      k: 15
+      rrf_pool: 25
+      do_rewrite: true
+      do_decompose: true
+      do_hyde: true
+      do_rerank: true
+reranker:
+  enabled: true
+  provider: cross_encoder
+  model: BAAI/bge-reranker-v2-m3
+  max_length: 512
+  nvidia_model: nvidia/rerank-qa-mistral-4b
+crag:
+  critical_domains: [medical, legal, regulatory, clinical, financial]
+  floor_keep_top_n: 5
+  thresholds:
+    default:
+      discard_below: 0.15
+      warn_below: 0.25
+      min_confident: 1
+    strict:
+      discard_below: 0.20
+      warn_below: 0.40
+      min_confident: 2
+chunking:
+  dense:
+    max_tokens: 350
+    overlap_tokens: 80
+    min_tokens: 80
+  structured:
+    max_tokens: 350
+    overlap_tokens: 80
+    min_tokens: 80
+  form:
+    max_tokens: 500
+    overlap_tokens: 60
+    min_tokens: 40
+  min_validation_chars: 20
+  embed_max_chars: 6000
+pgvector:
+  hnsw_m: 16
+  hnsw_ef_construction: 64
+  distance: cosine
+database:
+  url_env: GUMI_DATABASE_URL
+  pool_min_size: 2
+  pool_max_size: 10
+  ingest_semaphore_limit: 2
+  ingest_batch_size: 16
+llm:
+  provider: opencode_zen
+  model: deepseek-v4-flash-free
+  rewrite_variants: 2
+  temperature: 0.2
+  rerank_max_candidates: 20

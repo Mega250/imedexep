@@ -1,0 +1,40 @@
+version: 1
+change_type_levels:
+  add_tool: medium_risk
+  remove_tool: medium_risk
+  add_pack: medium_risk
+  modify_workflow: low_risk
+  modify_policy: high_risk
+permission_levels:
+  secrets: high_risk
+  network: medium_risk
+  filesystem: medium_risk
+  side_effects: medium_risk
+tool_risk_levels:
+  high: high_risk
+  medium: medium_risk
+  low: low_risk
+pii_levels:
+  high: high_risk
+  medium: medium_risk
+  low: low_risk
+  none: low_risk
+version_bump:
+  low_risk: patch
+  medium_risk: minor
+  high_risk: major
+approval_required_levels:
+  - medium_risk
+  - high_risk
+council_review_levels:
+  - high_risk
+blocked_meta_changes:
+  - can_create_agents
+  - can_modify_agents
+  - can_create_tools
+  - can_create_recursive_agents
+  - can_modify_own_policy
+  - can_disable_audit
+  - can_register_or_compile_agents
+  - can_request_agent_creation
+dependencies: {}

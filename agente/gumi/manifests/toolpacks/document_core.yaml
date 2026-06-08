@@ -1,0 +1,11 @@
+pack_id: document_core
+description: "Document Intelligence Layer: PDF/Excel/CSV/DOCX/XML hacia DocManifest, busqueda y citas."
+tools:
+  - document.intake
+  - document.extract
+  - document.classify
+  - document.structure
+  - document.semantic_manifest
+  - document.query
+  - document.cite
+  - document.validate

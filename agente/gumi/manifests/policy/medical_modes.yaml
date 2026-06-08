@@ -1,0 +1,45 @@
+version: 1
+default_mode: restricted
+modes:
+  admin_only:
+    allowed: [appointment_scheduling, document_routing, billing_summary]
+    forbidden: [diagnosis, treatment, medication_advice]
+    human_review: false
+  patient_education:
+    allowed: [general_explanations, explain_terms, prepare_questions_for_doctor]
+    forbidden: [personalized_diagnosis, personalized_treatment]
+    human_review: false
+    no_phi_store: true
+  clinician_assist:
+    allowed: [summarize_record, retrieve_guidelines, list_differential_considerations, cite_sources]
+    requires: [licensed_clinician_user, source_traceability, human_final_decision]
+    human_review: true
+  clinical_decision_support:
+    allowed: restricted
+    requires: [regulatory_review, validation_dataset, quality_management, risk_management, clinician_oversight]
+    human_review: true
+  autonomous_medical_decision:
+    allowed: false
+v1_allowed_modes: [admin_only, patient_education, clinician_assist]
+v1_blocked: [autonomous_diagnosis, autonomous_treatment, medication_dosing, emergency_triage]
+health_data_policy:
+  classify_as_sensitive: true
+  store_by_default: false
+  memory_write: forbidden_by_default
+  require_explicit_consent: true
+  audit_all_access: true
+  redact_unnecessary_phi: true
+  minimum_necessary_data: true
+  export_requires_approval: true
+post_council_chain: [policy_checker, source_verifier, clinical_safety_gate, human_clinician_review]
+medical_core_restricted:
+  tools: [medical.redact_phi, medical.extract_medication_names, medical.normalize_units, medical.guideline_retrieval, medical.source_citation, medical.clinician_review_request, audit.log_event, approval.request, policy.check]
+forbidden_medical_tools:
+  - medical.autonomous_diagnosis
+  - medical.prescribe_treatment
+  - medical.calculate_dose_without_clinician
+  - medical.emergency_triage_autonomous
+  - medical.modify_clinical_record_without_review
+small_local_model_medical_policy:
+  allowed: [ocr_cleanup, formatting, general_summarization_without_advice, json_repair]
+  forbidden: [diagnosis, treatment, medication_reasoning, clinical_judgment, risk_score_generation]

@@ -1,0 +1,10 @@
+pack_id: text_core
+description: "Utilidades de texto deterministas: normalizar, contar, extraer entidades (email/url/numero/telefono/rfc), slug, truncar, dividir y reemplazar."
+tools:
+  - text.normalize
+  - text.count
+  - text.extract
+  - text.slugify
+  - text.truncate
+  - text.split
+  - text.replace

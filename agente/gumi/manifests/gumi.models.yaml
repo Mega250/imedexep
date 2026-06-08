@@ -1,0 +1,124 @@
+version: 1
+fallback_tier: small
+rate:
+  window_hours: 5
+  multiplier_env: GUMI_RATE_MULTIPLIER
+  default_multiplier: 1
+probe:
+  enabled: true
+  ollama_show_path: /api/show
+  thresholds:
+    small_max_b: 12
+    mid_max_b: 31
+models:
+  "glm-5.1":
+    provider: opencode_go
+    family: glm
+    tier: frontier
+    requests_per_5h: 880
+    supports: { json_mode: true, tool_calling: true, long_context: true }
+    recommended_roles: [judge, appeal_judge]
+    parameter_overrides: { judge: { temperature_max: 0.25 } }
+  "kimi-k2.6":
+    provider: opencode_go
+    family: kimi
+    tier: frontier
+    requests_per_5h: 1150
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [planner]
+    parameter_overrides: { planner: { temperature_min: 0.25, temperature_max: 0.75 } }
+  "qwen3.7-max":
+    provider: opencode_go
+    family: qwen
+    tier: frontier
+    requests_per_5h: 950
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [methodologist]
+  "deepseek-v4-pro":
+    provider: opencode_go
+    family: deepseek
+    tier: frontier
+    requests_per_5h: 3450
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [skeptic, appeal_judge]
+  "deepseek-v4-flash":
+    provider: opencode_go
+    family: deepseek
+    tier: frontier
+    requests_per_5h: 31650
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [scout]
+  "deepseek-v4-flash-free":
+    provider: opencode_zen
+    family: deepseek
+    tier: frontier
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [scout, planner, methodologist, skeptic]
+  "big-pickle":
+    provider: opencode_zen
+    family: glm
+    tier: frontier
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [judge, appeal_judge]
+  "nemotron-3-ultra-free":
+    provider: opencode_zen
+    family: nemotron
+    tier: frontier
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [judge, planner, methodologist]
+  "gemma3:31b":
+    provider: ollama
+    family: gemma
+    tier: mid
+    param_count_b: 31
+    supports: { json_mode: false, tool_calling: false, long_context: true }
+    recommended_roles: [planner, methodologist, skeptic, judge]
+    parameter_overrides: { judge: { temperature_max: 0.18 }, planner: { temperature_max: 0.65 } }
+  "gemma4:26b":
+    provider: ollama
+    family: gemma
+    tier: mid
+    param_count_b: 26
+    supports: { json_mode: false, tool_calling: false }
+    recommended_roles: [planner, skeptic, judge]
+  "gemma4:e4b":
+    provider: ollama
+    family: gemma
+    tier: small
+    param_count_b: 4
+    supports: { json_mode: false, tool_calling: false }
+    recommended_roles: [scout]
+  "llama3.2:3b":
+    provider: ollama
+    family: llama
+    tier: small
+    param_count_b: 3
+    supports: { json_mode: false, tool_calling: false }
+    recommended_roles: [scout]
+  "meta/llama-3.1-8b-instruct":
+    provider: nvidia
+    family: llama
+    tier: small
+    param_count_b: 8
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [scout]
+  "nvidia/llama-3.1-nemotron-nano-8b-v1":
+    provider: nvidia
+    family: nemotron
+    tier: small
+    param_count_b: 8
+    supports: { json_mode: true, tool_calling: true }
+    recommended_roles: [scout]
+  "mistralai/ministral-14b-instruct-2512":
+    provider: nvidia
+    family: mistral
+    tier: mid
+    param_count_b: 14
+    supports: { json_mode: false, tool_calling: true }
+    recommended_roles: [scout]
+  "qwen/qwen3.5-397b-a17b":
+    provider: nvidia
+    family: qwen
+    tier: frontier
+    supports: { json_mode: true, tool_calling: true, long_context: true, vision: true }
+    recommended_roles: [planner, judge, methodologist]

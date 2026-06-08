@@ -1,0 +1,38 @@
+{
+  "lock": {
+    "agent_id": "iMedExp_Clinical_Support_Agent",
+    "capabilities": [],
+    "frozen": true,
+    "runtime_version": "0.1.0",
+    "tools": {
+      "forbidden": [
+        "autonomous_diagnosis",
+        "autonomous_treatment",
+        "emergency_triage",
+        "medication_dosing",
+        "modify_clinical_record_without_review",
+        "prescribe_treatment"
+      ],
+      "mandatory": [
+        "api.imedexp_clinico.list_consultations",
+        "api.imedexp_clinico.get_consultation",
+        "api.imedexp_clinico.list_diagnoses",
+        "api.imedexp_clinico.get_prescription",
+        "medical.normalize_units",
+        "medical.redact_phi",
+        "medical.analyze_medical_image",
+        "medical.source_citation",
+        "medical.clinician_review_request",
+        "approval.record_decision"
+      ],
+      "optional": []
+    },
+    "version": "0.1.0"
+  },
+  "signature": {
+    "agent_spec_sha256": "5a42344ef4bc78700dcd2cc30bd37ec4b8b52e0932269b63ef3f06be290b7b7f",
+    "policy_sha256": "6de211ec8120f575121173d2d1543099f1aa63fa6b95937d9f9f53e4729b7ea0",
+    "signed_by": "gumi-builder",
+    "tool_manifest_sha256": "135454b9eceddf16d6ecedfc46386501bd8df0c1534a68d0499d4aace1774627"
+  }
+}

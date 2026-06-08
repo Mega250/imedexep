@@ -1,0 +1,8 @@
+pack_id: math_core
+description: "Calculo universal y seguro (sin eval): evaluar expresiones aritmeticas, porcentajes, regla de tres, estadistica y redondeo. Sirve a cualquier dominio que calcule totales, descuentos, prorrateos o metricas."
+tools:
+  - math.calcular
+  - math.porcentaje
+  - math.regla_de_tres
+  - math.estadistica
+  - math.redondear

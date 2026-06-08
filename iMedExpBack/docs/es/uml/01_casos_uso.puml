@@ -1,0 +1,113 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Casos de Uso
+left to right direction
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+actor "Paciente" as Paciente
+actor "Doctor" as Doctor
+actor "Secretaria" as Secretaria
+actor "Administrador\nde Institucion" as AdminInst
+actor "Superadmin" as Superadmin
+actor "Sistema de\nObservabilidad" as Observabilidad
+actor "Usuario\nautenticado" as UsuarioAut
+actor "Staff\nautorizado" as StaffAut
+
+rectangle "iMedExp Backend" {
+  usecase "UC-01\nRegistrarse" as UC01
+  usecase "UC-02\nVerificar correo" as UC02
+  usecase "UC-03\nIniciar sesion" as UC03
+  usecase "UC-04\nConsultar usuario actual" as UC04
+  usecase "UC-05\nGestionar instituciones" as UC05
+  usecase "UC-06\nGestionar admins institucionales" as UC06
+  usecase "UC-07\nRegistrar doctor" as UC07
+  usecase "UC-08\nGestionar secretarias" as UC08
+  usecase "UC-09\nAsignar doctores a secretaria" as UC09
+  usecase "UC-10\nGestionar pacientes" as UC10
+  usecase "UC-11\nRelacionar paciente con institucion" as UC11
+  usecase "UC-12\nGestionar citas" as UC12
+  usecase "UC-13\nIniciar consulta clinica" as UC13
+  usecase "UC-14\nRegistrar diagnosticos" as UC14
+  usecase "UC-15\nRegistrar signos vitales" as UC15
+  usecase "UC-16\nGestionar prescripciones" as UC16
+  usecase "UC-17\nBuscar medicamentos" as UC17
+  usecase "UC-18\nGestionar contactos de emergencia" as UC18
+  usecase "UC-19\nGestionar invitaciones" as UC19
+  usecase "UC-20\nGenerar acceso QR" as UC20
+  usecase "UC-21\nRedimir acceso QR" as UC21
+  usecase "UC-22\nGestionar ciclo menstrual" as UC22
+  usecase "UC-23\nPredecir menstruacion" as UC23
+  usecase "UC-24\nConsultar salud y metricas" as UC24
+}
+
+Paciente --> UC01
+Paciente --> UC02
+Paciente --> UC03
+Paciente --> UC04
+Paciente --> UC18
+Paciente --> UC20
+Paciente --> UC22
+Paciente --> UC23
+
+Paciente --|> UsuarioAut
+
+Doctor --> UC03
+Doctor --> UC04
+Doctor --> UC10
+Doctor --> UC12
+Doctor --> UC13
+Doctor --> UC14
+Doctor --> UC15
+Doctor --> UC16
+Doctor --> UC17
+Doctor --> UC21
+Doctor --> UC22
+Doctor --> UC23
+
+Doctor --|> StaffAut
+
+Secretaria --> UC03
+Secretaria --> UC04
+Secretaria --> UC11
+Secretaria --> UC12
+Secretaria --> UC18
+Secretaria --> UC21
+
+Secretaria --|> StaffAut
+
+AdminInst --> UC03
+AdminInst --> UC04
+AdminInst --> UC08
+AdminInst --> UC09
+AdminInst --> UC10
+AdminInst --> UC11
+AdminInst --> UC12
+AdminInst --> UC15
+AdminInst --> UC19
+AdminInst --> UC21
+AdminInst --> UC22
+
+AdminInst --|> StaffAut
+
+Superadmin --> UC03
+Superadmin --> UC04
+Superadmin --> UC05
+Superadmin --> UC06
+Superadmin --> UC10
+Superadmin --> UC11
+Superadmin --> UC15
+Superadmin --> UC21
+Superadmin --> UC22
+
+Superadmin --|> StaffAut
+StaffAut --|> UsuarioAut
+
+Observabilidad --> UC24
+
+UC02 ..> UC01 : <<extend>>
+UC04 ..> UC03 : <<include>>
+UC14 ..> UC13 : <<extend>>
+UC16 ..> UC13 : <<extend>>
+UC23 ..> UC22 : <<include>>
+UC21 ..> UC20 : <<include>>
+@enduml
