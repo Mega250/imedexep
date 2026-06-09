@@ -1,0 +1,5 @@
+pack_id: rag_core
+description: "Recuperacion de conocimiento UNIVERSAL (agnostica de dominio): buscar en la base vectorial (RAG) y consultar el grafo de relaciones logicas. Fundamenta las respuestas del agente en fuentes; el KB es configurable por despliegue."
+tools:
+  - rag.buscar
+  - rag.consultar_relaciones

@@ -1,0 +1,14 @@
+pack_id: db_core
+description: "Database Semantic Layer: importacion sandbox, DataManifest, CRUD por entidades, lectura validada y analytics."
+tools:
+  - db.import_sql_sandbox
+  - db.introspect_schema
+  - db.generate_data_manifest
+  - db.validate_data_manifest
+  - db.create_record
+  - db.update_record
+  - db.delete_record
+  - db.list_records
+  - db.safe_read_query
+  - db.analytics
+  - db.transaction

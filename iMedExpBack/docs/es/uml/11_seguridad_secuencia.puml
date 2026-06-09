@@ -1,0 +1,45 @@
+@startuml
+title iMedExp Backend - Secuencia UML de Seguridad por Request
+skinparam shadowing false
+autonumber
+
+actor Cliente
+boundary "FastAPI ASGI" as ASGI
+control "MaxBodySizeMiddleware" as BodyLimit
+control "RateLimitMiddleware" as RateLimit
+control "SecurityHeadersMiddleware" as Headers
+boundary "Router API v1" as Router
+control "Auth Dependencies" as Auth
+control "RLS Context" as RLS
+control "Service" as Service
+control "Repository" as Repo
+database "PostgreSQL" as DB
+
+Cliente -> ASGI : HTTP request
+ASGI -> BodyLimit : validar Content-Length/body
+alt body excede limite
+  BodyLimit --> Cliente : 413 Payload Too Large
+else body permitido
+  BodyLimit -> RateLimit : evaluar cuota por IP/ruta
+  alt cuota excedida
+    RateLimit --> Cliente : 429 Too Many Requests
+  else cuota disponible
+    RateLimit -> Router : continuar
+    Router -> Auth : validar JWT y rol
+    alt token invalido o rol insuficiente
+      Auth --> Cliente : 401/403
+    else autorizado
+      Auth -> RLS : preparar contexto
+      RLS -> DB : SET variables de sesion
+      Router -> Service : ejecutar caso de uso
+      Service -> Repo : solicitar persistencia
+      Repo -> DB : query parametrizada
+      DB --> Repo : filas permitidas por RLS
+      Repo --> Service : entidades
+      Service --> Router : DTO
+      Router -> Headers : agregar cabeceras de seguridad
+      Headers --> Cliente : respuesta JSON
+    end
+  end
+end
+@enduml

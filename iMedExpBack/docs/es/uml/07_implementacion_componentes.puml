@@ -1,0 +1,37 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Componentes
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+actor "Cliente Web/Movil" as Client
+collections "Prometheus" as Prometheus
+
+component "FastAPI Application\napp/main.py" as App {
+  component "Middleware\nRateLimit, MaxBody, SecurityHeaders" as Middleware
+  component "Routers API v1\napp/api/v1" as Routers
+  component "Dependencies\nAuth, Roles, RLS" as Deps
+  component "Services\napp/services" as Services
+  component "Repositories\napp/repositories" as Repositories
+  component "Schemas Pydantic\napp/schemas" as Schemas
+  component "Models SQLAlchemy\napp/models" as Models
+  component "Metrics\napp/core/metrics.py" as Metrics
+}
+
+database "PostgreSQL\ncore, clinical, catalog, audit" as DB
+file "SQL Bootstrap\nsql/*.sql" as SQL
+component "Email Provider\nSMTP externo" as Email
+
+Client --> App : HTTP/JSON
+App --> Middleware
+Middleware --> Routers
+Routers --> Deps
+Routers --> Schemas
+Routers --> Services
+Services --> Repositories
+Repositories --> Models
+Repositories --> DB : SQL parametrizado
+SQL --> DB : schemas, RLS, triggers, indexes
+Services --> Email : codigos de verificacion
+Prometheus --> Metrics : GET /metrics
+Metrics --> App
+@enduml

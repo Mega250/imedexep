@@ -1,0 +1,44 @@
+manifest_id: sii_alumnos_v1
+owner: "Institucion Ejemplo"
+base_url: "https://api.institucion.edu.mx/sii"
+auth:
+  type: oauth2_client_credentials
+  secret_ref: sii_token
+  header_name: Authorization
+data_classification: student_personal_data
+risk_level: C
+requires_human_developer: true
+requires_audit: true
+allowed_roles: [school_admin, authorized_teacher, student_self_service]
+allowed_endpoints:
+  - name: consultar_alumno_por_matricula
+    path: "/alumnos/{matricula}"
+    method: GET
+    pii_level: high
+    required_scopes: [alumnos.read]
+    response_fields: [nombre, semestre, estatus]
+    rate_limit_per_min: 30
+    requires_audit: true
+  - name: consultar_calificaciones
+    path: "/alumnos/{matricula}/calificaciones"
+    method: GET
+    pii_level: high
+    required_scopes: [calificaciones.read]
+    response_fields: [materia, calificacion, estatus]
+    rate_limit_per_min: 30
+    requires_audit: true
+  - name: metricas_alumnos_por_carrera
+    path: "/alumnos/agregado"
+    method: GET
+    pii_level: low
+    required_scopes: [alumnos.read.agg]
+    aggregate_only: true
+    rate_limit_per_min: 60
+    requires_audit: true
+forbidden_endpoints:
+  - "DELETE /alumnos/{matricula}"
+  - "PATCH /alumnos/{matricula}/calificaciones"
+  - "POST /admin/*"
+  - "GET /alumnos/export_all"
+state: draft
+version: 1

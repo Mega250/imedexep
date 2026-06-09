@@ -1,0 +1,24 @@
+version: 1
+defaults:
+  network: disabled_by_default
+  filesystem: temp_only
+  host_mounts: none
+  secrets: none_by_default
+  timeout_seconds: 10
+  memory_limit_mb: 256
+  cpu_limit: 1
+  package_install: restricted
+  side_effects: blocked_by_default
+  logs: captured
+forbidden_patterns:
+  - "eval("
+  - "exec("
+  - "subprocess"
+  - "os.system"
+  - "open('/etc"
+  - "open('/home"
+  - "os.environ"
+  - "socket"
+secrets:
+  injection: runtime_only
+  visible_to_model: false

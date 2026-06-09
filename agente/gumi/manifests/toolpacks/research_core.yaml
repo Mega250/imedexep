@@ -1,0 +1,10 @@
+pack_id: research_core
+description: "Lineas de investigacion: busqueda de papers en arXiv, formateo de citas, priorizacion de lineas, lectura y busqueda en PDF con cita por pagina, y memoria de notas."
+tools:
+  - research.deep_research
+  - research.buscar_arxiv
+  - research.formato_cita
+  - research.priorizar_lineas
+  - research.extraer_pdf
+  - research.buscar_en_documento
+  - research.guardar_nota

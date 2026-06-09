@@ -1,0 +1,33 @@
+version: 1
+agent_types:
+  programming_tutor: { risk: low, allowed: true, requires: [sandbox] }
+  pair_programmer: { risk: medium, allowed: true, requires: [workspace_scope, file_permissions, diff_preview, human_approval_before_write] }
+  code_reviewer: { risk: low_medium, allowed: true, default_mode: read_only }
+  debugging_agent: { risk: medium, allowed: true, requires: [sandbox, scoped_workspace, no_secret_exposure] }
+  devops_agent: { risk: high, allowed: restricted, requires: [human_approval, dry_run, command_allowlist, audit] }
+  cybersecurity_agent: { risk: high, allowed: by_intent }
+programming_capabilities:
+  teach_concepts: { risk: low, allowed: true }
+  run_user_code: { risk: medium, allowed: true, requires: [sandbox] }
+  edit_project_files: { risk: medium, allowed: true, requires: [workspace_scope, diff_preview] }
+  install_packages: { risk: medium, allowed: restricted, requires: [package_allowlist] }
+  access_network: { risk: medium_high, allowed: restricted, requires: [domain_allowlist] }
+  execute_shell_commands: { risk: high, allowed: restricted, requires: [command_allowlist, human_approval] }
+  deploy_to_production: { risk: high, allowed: restricted, requires: [human_approval, audit, dry_run] }
+  create_malware: { risk: critical, allowed: false }
+  steal_credentials: { risk: critical, allowed: false }
+  exploit_third_party_systems: { risk: critical, allowed: false }
+cyber_policy:
+  defensive_education: allowed
+  own_code_audit: allowed
+  public_target_exploitation: forbidden
+  malware_generation: forbidden
+  credential_theft: forbidden
+  evasion: forbidden
+teaching_policy:
+  default_style: step_by_step
+  prefer_hints_over_full_solution: true
+  require_user_attempt_before_solution: true
+  adapt_to_level: true
+  explain_errors: true
+  use_small_exercises: true

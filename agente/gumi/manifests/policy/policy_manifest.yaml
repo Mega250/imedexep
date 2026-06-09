@@ -1,0 +1,42 @@
+version: 1
+defaults:
+  unknown_domain_level: C
+  unknown_capability: block
+rules:
+  - id: block_domain_D
+    when: { domain_level: D }
+    then: { verdict: block, reason: "Dominio nivel D bloqueado por defecto." }
+  - id: meta_recursion_block
+    when: { capability_in: [agent_creation], requester_is_agent: true }
+    then: { verdict: block, reason: "Meta-agent recursion guard: solo Gumi Builder crea agentes." }
+  - id: restricted_domain_C
+    when: { domain_level: C }
+    then:
+      verdict: restricted
+      requires_human_approval: true
+      guardrails: [audit, source_verification, no_full_autonomy, block_irreversible_actions]
+  - id: connector_write_gate
+    when: { capability_in: [external_api_write] }
+    then:
+      verdict: restricted
+      requires_human_approval: true
+      guardrails: [api_manifest, rbac, scopes, audit]
+  - id: tool_creation_gate
+    when: { capability_in: [tool_creation] }
+    then:
+      verdict: restricted
+      guardrails: [sandbox, tests, human_approval, audit]
+  - id: database_write_gate
+    when: { capability_in: [database_write] }
+    then:
+      verdict: restricted
+      requires_human_approval: true
+      guardrails: [data_manifest_confirmed, audit, scopes]
+  - id: sensible_domain_B
+    when: { domain_level: B }
+    then:
+      verdict: allow
+      guardrails: [audit, data_minimization, no_auto_memory, human_confirmation_for_writes]
+  - id: normal_domain_A
+    when: { domain_level: A }
+    then: { verdict: allow }

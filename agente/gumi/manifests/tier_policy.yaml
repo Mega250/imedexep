@@ -1,0 +1,34 @@
+version: 1
+tiers:
+  frontier:
+    allowed_roles: [scout, planner, methodologist, skeptic, judge, appeal_judge]
+    forbidden_roles: []
+    council_mode: multi_model
+    allow_clinical_judgment: false
+    allow_complex_semantic_judgment: true
+    extra_validation: false
+  mid:
+    allowed_roles: [scout, planner, methodologist, skeptic, judge, appeal_judge]
+    forbidden_roles: []
+    council_mode: simulated
+    allow_clinical_judgment: false
+    allow_complex_semantic_judgment: true
+    extra_validation: true
+  small:
+    allowed_roles: [scout, classifier, extractor, summarizer, json_repair]
+    forbidden_roles: [planner, methodologist, skeptic, judge, appeal_judge, security_reviewer, semantic_db_mapper_final, tool_architect, production_write_decider]
+    council_mode: simulated
+    allow_clinical_judgment: false
+    allow_complex_semantic_judgment: false
+    extra_validation: true
+local_mode_defaults:
+  enforce_json_repair: true
+  retry_on_invalid_json: true
+  max_json_retries: 2
+  use_schema_validator: true
+  reduce_context_when_retrying: true
+  disable_freeform_debate: true
+  max_parallel_llm_calls: 1
+api_mode_defaults:
+  allow_multi_model_council: true
+  max_parallel_llm_calls: 3

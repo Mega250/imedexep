@@ -1,0 +1,413 @@
+{
+  "agent_generation_depth": 0,
+  "agent_id": null,
+  "approval_ref": null,
+  "can_create_agents": false,
+  "can_create_tools": false,
+  "can_modify_agents": false,
+  "capabilities": [],
+  "compiled": true,
+  "description": "Asistir a medicos leyendo el historial completo en iMedExp, normalizando datos, redactando PHI, analizando imagenes de forma preliminar y generando consideraciones diagnosticas diferenciales con fuentes, sin emitir diagnosticos finales ni prescripciones autonomas.",
+  "domain": "medicina",
+  "domain_risk_level": "C",
+  "eval_rubric": [
+    {
+      "criterion": "Precision en la extraccion de datos de iMedExp",
+      "question": ""
+    },
+    {
+      "criterion": "Correcta normalizacion de unidades clinicas",
+      "question": ""
+    },
+    {
+      "criterion": "Eliminacion total de PHI en salidas intermedias",
+      "question": ""
+    },
+    {
+      "criterion": "Claridad en la distincion entre hallazgos preliminares y diagnosticos",
+      "question": ""
+    },
+    {
+      "criterion": "Presencia obligatoria de citas de fuentes medicas",
+      "question": ""
+    },
+    {
+      "criterion": "Confirmacion de revision humana antes de finalizar",
+      "question": ""
+    }
+  ],
+  "failure_modes": [
+    "Interpretacion erronea de imagenes como diagnostico final",
+    "Fuga de datos personales sensibles (PHI)",
+    "Omisión de revision humana por parte del medico",
+    "Desactualizacion de guias clinicas citadas",
+    "Errores de conversion en unidades clinicas criticas"
+  ],
+  "forbidden_capabilities": [
+    "autonomous_diagnosis",
+    "autonomous_treatment",
+    "emergency_triage",
+    "medication_dosing",
+    "modify_clinical_record_without_review",
+    "prescribe_treatment"
+  ],
+  "human_review_points": [
+    "audit",
+    "block_irreversible_actions",
+    "explain_limits",
+    "human_expert",
+    "no_full_autonomy",
+    "prior_evaluation",
+    "source_verification"
+  ],
+  "language": "es",
+  "max_child_depth": 0,
+  "max_tool_iterations": 5,
+  "memory_policy": {
+    "auto_write": false,
+    "do_not_remember": [],
+    "remember": []
+  },
+  "meta_permissions": {
+    "can_create_child_agents": false,
+    "can_create_recursive_agents": false,
+    "can_disable_audit": false,
+    "can_draft_agent_specs": false,
+    "can_modify_own_policy": false,
+    "can_register_or_compile_agents": false,
+    "can_request_agent_creation": false
+  },
+  "name": "iMedExp_Clinical_Support_Agent",
+  "non_goals": [],
+  "policy_decision_ref": "c5a11e5ac0e84a6e80e57fa17b33e22b",
+  "primary_goal": "Asistir a medicos leyendo el historial completo en iMedExp, normalizando datos, redactando PHI, analizando imagenes de forma preliminar y generando consideraciones diagnosticas diferenciales con fuentes, sin emitir diagnosticos finales ni prescripciones autonomas.",
+  "required_toolpacks": [],
+  "runtime_policy": {
+    "filesystem": "temporary_workspace_only",
+    "max_execution_time_seconds": 30,
+    "network": "disabled_by_default",
+    "requires_human_confirmation_for": []
+  },
+  "system_prompt": "",
+  "tools": [
+    {
+      "api_manifest_ref": null,
+      "backend_function": "api.imedexp_clinico.list_consultations",
+      "description": "Llamar el endpoint 'list_consultations' de iMedExp (historial clinico de pacientes) - conector institucional de SOLO LECTURA, PHI (GET /api/v1/consultations/).",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "api.imedexp_clinico.list_consultations",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "api.imedexp_clinico.list_consultations"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "api.imedexp_clinico.get_consultation",
+      "description": "Llamar el endpoint 'get_consultation' de iMedExp (historial clinico de pacientes) - conector institucional de SOLO LECTURA, PHI (GET /api/v1/consultations/{consultation_id}).",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "api.imedexp_clinico.get_consultation",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "api.imedexp_clinico.get_consultation"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "api.imedexp_clinico.list_diagnoses",
+      "description": "Llamar el endpoint 'list_diagnoses' de iMedExp (historial clinico de pacientes) - conector institucional de SOLO LECTURA, PHI (GET /api/v1/consultations/{consultation_id}/diagnosis).",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "api.imedexp_clinico.list_diagnoses",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "api.imedexp_clinico.list_diagnoses"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "api.imedexp_clinico.get_prescription",
+      "description": "Llamar el endpoint 'get_prescription' de iMedExp (historial clinico de pacientes) - conector institucional de SOLO LECTURA, PHI (GET /api/v1/prescriptions/consultation/{consultation_id}).",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "api.imedexp_clinico.get_prescription",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "api.imedexp_clinico.get_prescription"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "medical.normalize_units",
+      "description": "Convertir unidades clinicas: glucosa mg/dL<->mmol/L, temperatura C<->F, peso kg<->lb, altura cm<->in.",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "medical.normalize_units",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "medical.normalize_units"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "medical.redact_phi",
+      "description": "Redactar datos personales sensibles (CURP, email, telefono) de un texto antes de compartirlo o registrarlo.",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "medical.redact_phi",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "medical.redact_phi"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "medical.analyze_medical_image",
+      "description": "Analizar de forma PRELIMINAR una imagen medica (radiografia, escaneo, foto de receta o reporte de laboratorio) con el modelo MedGemma; devuelve hallazgos preliminares con disclaimer obligatorio. NUNCA es un diagnostico final.",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "medical.analyze_medical_image",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "medical.analyze_medical_image"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "medical.source_citation",
+      "description": "Formatear una cita de una fuente medica (guia clinica, articulo) con trazabilidad.",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "medical.source_citation",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "medical.source_citation"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "medical.clinician_review_request",
+      "description": "Registrar una solicitud de revision por un medico con licencia; marca el contenido como NO-diagnostico, pendiente de decision clinica.",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "medical.clinician_review_request",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "medical.clinician_review_request"
+    },
+    {
+      "api_manifest_ref": null,
+      "backend_function": "approval.record_decision",
+      "description": "",
+      "fixed_arguments": {},
+      "max_memory_mb": 256,
+      "name": "approval.record_decision",
+      "parameters": {
+        "properties": {},
+        "required": [],
+        "type": "object"
+      },
+      "permissions": {
+        "allowed_domains": [],
+        "filesystem": false,
+        "network": false,
+        "secrets": false,
+        "side_effects": false
+      },
+      "pii_level": "none",
+      "required_capabilities": [],
+      "required_scopes": [],
+      "requires_audit": false,
+      "requires_human_approval": false,
+      "source": "toolpack",
+      "timeout_ms": 10000,
+      "tool_id": "approval.record_decision"
+    }
+  ],
+  "version": "0.1.0",
+  "workflow": [
+    {
+      "description": "Obtener historial completo de consultas y diagnosticos via api.imedexp_clinico",
+      "step": "1"
+    },
+    {
+      "description": "Recuperar recetas y medicamentos previos via api.imedexp_clinico",
+      "step": "2"
+    },
+    {
+      "description": "Normalizar unidades clinicas con medical.normalize_units",
+      "step": "3"
+    },
+    {
+      "description": "Redactar datos personales sensibles con medical.redact_phi",
+      "step": "4"
+    },
+    {
+      "description": "Analizar imagenes medicas aportadas con medical.analyze_medical_image (marcando como preliminar)",
+      "step": "5"
+    },
+    {
+      "description": "Buscar guias clinicas y citar fuentes con medical.source_citation",
+      "step": "6"
+    },
+    {
+      "description": "Generar lista de consideraciones diagnosticas diferenciales (prediagnostico)",
+      "step": "7"
+    },
+    {
+      "description": "Solicitar revision obligatoria de medico con licencia via medical.clinician_review_request",
+      "step": "8"
+    },
+    {
+      "description": "Registrar decision de aprobacion humana via approval.record_decision",
+      "step": "9"
+    }
+  ]
+}

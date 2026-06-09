@@ -1,0 +1,109 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Clases Clinicas
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+hide empty methods
+
+class Consultation {
+  +id: int
+  +patient_id: int
+  +doctor_id: int
+  +institution_id: int
+  +appointment_id: int
+  +chief_complaint: str
+  +notes: str
+  +created_at: datetime
+}
+
+class Diagnosis {
+  +id: int
+  +consultation_id: int
+  +disease_id: int
+  +diagnosis_type: str
+  +notes: str
+}
+
+class Disease {
+  +id: int
+  +code: str
+  +name: str
+  +catalog: str
+}
+
+class VitalSign {
+  +id: int
+  +patient_id: int
+  +temperature: numeric
+  +heart_rate: int
+  +respiratory_rate: int
+  +blood_pressure_systolic: int
+  +blood_pressure_diastolic: int
+  +oxygen_saturation: numeric
+  +recorded_at: datetime
+}
+
+class Prescription {
+  +id: int
+  +consultation_id: int
+  +patient_id: int
+  +doctor_id: int
+  +notes: str
+  +is_signed: bool
+  +signed_at: datetime
+}
+
+class TreatmentDetail {
+  +id: int
+  +prescription_id: int
+  +medication_id: int
+  +dose: str
+  +frequency: str
+  +duration: str
+  +instructions: str
+  +status: TreatmentStatus
+}
+
+class Medication {
+  +id: int
+  +name: str
+  +active_ingredient: str
+  +presentation: str
+}
+
+class MenstrualCycle {
+  +id: int
+  +patient_id: int
+  +start_date: date
+  +end_date: date
+  +flow: MenstrualFlow
+  +symptoms: dict
+  +notes: str
+}
+
+class MenstrualCyclePredictor {
+  +predict(cycles): Prediction
+  -classify_regularity(intervals): str
+  -confidence_score(intervals): float
+  -prediction_window(cycles): DateRange
+}
+
+class Patient
+class Doctor
+class Institution
+class Appointment
+
+Patient "1" -- "0..*" Consultation
+Doctor "1" -- "0..*" Consultation
+Institution "1" -- "0..*" Consultation
+Appointment "0..1" -- "0..1" Consultation
+Consultation "1" -- "0..*" Diagnosis
+Disease "1" -- "0..*" Diagnosis
+Consultation "1" -- "0..1" Prescription
+Prescription "1" -- "0..*" TreatmentDetail
+Medication "1" -- "0..*" TreatmentDetail
+Patient "1" -- "0..*" VitalSign
+Patient "1" -- "0..*" MenstrualCycle
+Patient "1" -- "0..*" Prescription
+Doctor "1" -- "0..*" Prescription
+MenstrualCyclePredictor ..> MenstrualCycle : usa historial
+@enduml

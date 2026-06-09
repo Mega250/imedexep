@@ -1,0 +1,41 @@
+version: 1
+agent_creation_policy:
+  default: forbidden_for_exported_agents
+  allowed_only_in: gumi_builder
+  max_creation_depth: 1
+  requires_human_approval: true
+  requires_compile_check: true
+  requires_policy_check: true
+  can_create_tools: false_by_default
+  can_modify_own_policy: false
+meta_permissions:
+  can_draft_agent_specs: low_risk
+  can_request_agent_creation: medium_risk
+  can_register_or_compile_agents: critical
+  can_create_child_agents: critical
+  can_create_recursive_agents: forbidden
+  can_modify_own_policy: forbidden
+  can_disable_audit: forbidden
+default_agent_meta:
+  agent_generation_depth: 0
+  can_create_agents: false
+  can_modify_agents: false
+  can_create_tools: false
+  max_child_depth: 0
+builder_meta:
+  agent_id: gumi_builder
+  agent_generation_depth: 0
+  can_create_agents: true
+  can_modify_agents: true
+  can_create_tools: true
+  max_child_depth: 1
+safe_meta_agent:
+  agent_type: agent_spec_draft_assistant
+  can_draft_agent_specs: true
+  can_register_agents: false
+  can_compile_agents: false
+  can_add_tools: false
+  can_export_agents: false
+unsafe_meta_agent:
+  agent_type: autonomous_agent_factory
+  blocked: true

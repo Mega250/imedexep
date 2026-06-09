@@ -1,0 +1,1 @@
+ALTER TABLE institution ADD COLUMN IF NOT EXISTS policies JSONB NOT NULL DEFAULT '{}'::jsonb;

@@ -1,0 +1,55 @@
+version: 1
+providers:
+  ollama:
+    type: ollama
+    base_url_env: GUMI_BASE_URL
+    default_base_url: http://localhost:11434
+    native_tool_calling: false
+  opencode_go:
+    type: openai_compat
+    base_url_env: GUMI_API_BASE_URL
+    default_base_url: https://opencode.ai/zen/go/v1
+    api_key_env: GUMI_API_KEY
+    native_tool_calling: true
+  opencode_zen:
+    type: openai_compat
+    base_url_env: GUMI_ZEN_BASE_URL
+    default_base_url: https://opencode.ai/zen/v1
+    api_key_env: GUMI_API_KEY
+    native_tool_calling: true
+  vllm:
+    type: openai_compat
+    base_url_env: GUMI_VLLM_URL
+    api_key_env: GUMI_VLLM_API_KEY
+    native_tool_calling: true
+  llamacpp:
+    type: openai_compat
+    base_url_env: GUMI_LLAMACPP_URL
+    native_tool_calling: false
+  openai_compat:
+    type: openai_compat
+    base_url_env: GUMI_OPENAI_BASE_URL
+    api_key_env: GUMI_OPENAI_API_KEY
+    native_tool_calling: true
+  nvidia:
+    type: openai_compat
+    base_url_env: GUMI_NVIDIA_BASE_URL
+    default_base_url: https://integrate.api.nvidia.com/v1
+    api_key_env: GUMI_NVIDIA_API_KEY
+    native_tool_calling: false
+    rate_limit:
+      max: 40
+      window_minutes: 1
+    credits_total: 5000
+  openai:
+    type: openai_compat
+    base_url_env: GUMI_OPENAI_BASE_URL
+    default_base_url: https://api.openai.com/v1
+    api_key_env: GUMI_OPENAI_API_KEY
+    native_tool_calling: true
+  anthropic:
+    type: openai_compat
+    base_url_env: GUMI_ANTHROPIC_BASE_URL
+    default_base_url: https://api.anthropic.com/v1
+    api_key_env: GUMI_ANTHROPIC_API_KEY
+    native_tool_calling: true

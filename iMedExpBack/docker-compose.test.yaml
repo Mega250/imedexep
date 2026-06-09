@@ -1,0 +1,40 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16-trixie
+    environment:
+      POSTGRES_DB: med_records_test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_test_password
+      APP_API_PASSWORD: app_api_test_password
+    volumes:
+      - ./sql:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d med_records_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  tests:
+    build: .
+    command: ["pytest", "-q"]
+    environment:
+      APP_ENV: testing
+      DEBUG: "false"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_DB: med_records_test
+      POSTGRES_USER: app_api
+      POSTGRES_PASSWORD: app_api_test_password
+      JWT_SECRET_KEY: test-jwt-secret
+      JWT_ALGORITHM: HS256
+      JWT_ACCESS_EXPIRE_MINUTES: "30"
+      JWT_REFRESH_EXPIRE_DAYS: "2"
+      ENCRYPTION_KEY: X9wbQ7u1JwYUsYMijUCio7F5Yrr9XPP78Zih3-ZPNEM=
+      CORS_ALLOW_ORIGINS: http://localhost:3000,http://localhost:5173
+      MAIL_ENABLED: "false"
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+    depends_on:
+      postgres:
+        condition: service_healthy

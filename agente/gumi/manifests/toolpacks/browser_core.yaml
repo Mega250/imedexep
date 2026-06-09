@@ -1,0 +1,16 @@
+pack_id: browser_core
+description: "Automatizacion de navegador (gated, pensada para modelos multimodales): navegar, capturar pantalla, leer texto, y actuar por selector CSS o por coordenadas dentro del navegador. Allowlist de dominios (deny-by-default); las acciones con efecto requieren aprobacion humana."
+tools:
+  - browser.navigate
+  - browser.snapshot
+  - browser.read_text
+  - browser.scroll
+  - browser.click
+  - browser.fill
+  - browser.click_at
+  - browser.press_key
+  - browser.type_text
+  - browser.elements
+  - browser.click_element
+  - browser.fill_element
+  - browser.close

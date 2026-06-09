@@ -1,0 +1,23 @@
+manifest_id: frankfurter_fx
+owner: "Frankfurter (API publica de tipos de cambio, sin credenciales)"
+base_url: "https://api.frankfurter.dev"
+auth:
+  type: none
+data_classification: public
+risk_level: A
+requires_human_developer: false
+requires_audit: true
+allowed_roles: ["*"]
+allowed_endpoints:
+  - name: tipos_de_cambio
+    path: "/v1/latest"
+    method: GET
+    pii_level: none
+    required_scopes: []
+    aggregate_only: false
+    response_fields: []
+    rate_limit_per_min: 30
+    requires_audit: true
+forbidden_endpoints: []
+state: active
+version: 1

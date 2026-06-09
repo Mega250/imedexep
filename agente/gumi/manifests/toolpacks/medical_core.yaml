@@ -1,0 +1,9 @@
+pack_id: medical_core
+description: "Apoyo clinico SEGURO (no diagnostica ni trata de forma autonoma): redactar datos personales sensibles (PHI), normalizar unidades clinicas, extraer nombres de medicamentos y dosis, formatear citas de fuentes con trazabilidad, y solicitar la revision de un medico con licencia. El resumen y las consideraciones diferenciales los razona el agente; estas tools son capacidades deterministas."
+tools:
+  - medical.redact_phi
+  - medical.normalize_units
+  - medical.extract_medication_names
+  - medical.source_citation
+  - medical.clinician_review_request
+  - medical.analyze_medical_image

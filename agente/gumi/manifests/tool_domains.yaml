@@ -1,0 +1,206 @@
+version: 1
+tiers: [essential, common, occasional, rare]
+coverage_threshold: 0.2
+universal_categories: [approval, audit, identity]
+default_tools: [rag.buscar, rag.consultar_relaciones]
+domains:
+  utilidad_fechas:
+    tier: essential
+    label: "Fechas y tiempo"
+    risk_domain: organizacion_personal
+    categories: [utilidad]
+    status: active
+    packs: [datetime_core]
+    capabilities: ["fecha y hora actual", "interpretar una fecha escrita en texto", "diferencia entre dos fechas", "sumar o restar dias a una fecha", "dia de la semana de una fecha"]
+  utilidad_texto:
+    tier: essential
+    label: "Procesamiento de texto"
+    risk_domain: reportes_simples
+    categories: [utilidad]
+    status: active
+    packs: [text_core]
+    capabilities: ["normalizar texto sin acentos", "contar palabras y caracteres", "extraer email url telefono o rfc de un texto", "convertir texto en slug", "dividir o reemplazar texto"]
+  utilidad_calculo:
+    tier: essential
+    label: "Calculo y matematicas"
+    risk_domain: reportes_simples
+    categories: [calculo]
+    status: active
+    packs: [math_core]
+    capabilities: ["evaluar una expresion aritmetica", "calcular el porcentaje de un valor", "resolver una regla de tres", "calcular promedio suma y estadistica de una lista", "redondear un numero"]
+  archivos:
+    tier: essential
+    label: "Archivos del workspace"
+    risk_domain: documentos_no_sensibles
+    categories: [archivos]
+    status: active
+    packs: [file_core]
+    capabilities: ["leer un archivo de texto", "escribir o anexar a un archivo", "listar archivos de un directorio", "comprobar si un archivo existe"]
+  web:
+    tier: essential
+    label: "Web de solo lectura"
+    risk_domain: busqueda_publica
+    categories: [web]
+    status: active
+    packs: [web_core]
+    capabilities: ["descargar el texto de una pagina web publica", "extraer texto plano de html"]
+  documentos:
+    tier: essential
+    label: "Inteligencia de documentos"
+    risk_domain: documentos_no_sensibles
+    categories: [document]
+    status: active
+    packs: [document_core]
+    capabilities: ["leer y extraer el contenido de un pdf o excel", "clasificar y estructurar un documento", "buscar dentro de un documento y citar la pagina", "construir un manifiesto semantico del documento"]
+  plantillas:
+    tier: essential
+    label: "Plantillas y formularios"
+    risk_domain: documentos_no_sensibles
+    categories: [template]
+    status: active
+    packs: [template_core]
+    capabilities: ["detectar los campos de una plantilla", "vincular datos a una plantilla", "previsualizar y renderizar un documento", "validar el mapeo de una plantilla"]
+  datos_bd:
+    tier: essential
+    label: "Capa semantica de base de datos"
+    risk_domain: analisis_de_datos_privados
+    categories: [database]
+    status: active
+    packs: [db_core]
+    capabilities: ["introspeccionar el esquema de una base de datos", "mapear las tablas a entidades de negocio", "consultar y filtrar registros por entidad", "crear actualizar o borrar registros con permiso", "metricas y consultas de solo lectura validadas"]
+  conocimiento_rag:
+    tier: essential
+    label: "Base de conocimiento (RAG)"
+    risk_domain: busqueda_publica
+    categories: [rag]
+    status: partial
+    packs: [rag_search]
+    capabilities: ["buscar en la base de conocimiento del agente", "ingerir documentos a la base de conocimiento"]
+  notificaciones:
+    tier: essential
+    label: "Notificaciones y bandeja de salida"
+    risk_domain: reportes_simples
+    categories: [outbox]
+    status: active
+    packs: [outbox_core]
+    capabilities: ["redactar un mensaje sin enviarlo", "enviar un mensaje solo tras aprobacion", "listar mensajes pendientes"]
+  agenda:
+    tier: essential
+    label: "Tareas programadas"
+    risk_domain: organizacion_personal
+    categories: [scheduler]
+    status: active
+    packs: [scheduler_core]
+    capabilities: ["crear una tarea recurrente", "pausar o ejecutar una tarea", "listar las tareas programadas"]
+  identidad_aprobacion:
+    tier: essential
+    label: "Identidad, secretos y aprobacion"
+    risk_domain: organizacion_personal
+    categories: [identity, approval]
+    status: active
+    packs: [identity_core]
+    capabilities: ["identificar al usuario y sus permisos", "obtener un secreto en runtime sin exponerlo", "solicitar aprobacion humana"]
+  auditoria:
+    tier: essential
+    label: "Auditoria"
+    risk_domain: organizacion_personal
+    categories: [audit]
+    status: active
+    packs: [audit_core]
+    capabilities: ["registrar un evento de auditoria", "registrar una llamada a herramienta", "exportar la traza de una ejecucion"]
+  contabilidad_fiscal_mx:
+    tier: common
+    label: "Contabilidad fiscal (Mexico / CFDI / SAT)"
+    risk_domain: finanzas_credito_seguros
+    categories: [contabilidad]
+    status: active
+    packs: [contabilidad_mx]
+    capabilities: ["validar un CFDI y su sello", "consultar claves del SAT", "detectar EFOS lista 69-B", "calcular IVA y retenciones", "preparar DIOT y resumen mensual"]
+  investigacion_academica:
+    tier: common
+    label: "Lineas de investigacion academica"
+    risk_domain: lineas_investigacion
+    categories: [investigacion]
+    status: active
+    packs: [research_core]
+    capabilities: ["formatear citas bibliograficas", "priorizar lineas de investigacion", "leer y citar pdfs por pagina", "guardar notas de investigacion"]
+  gestion_institucional_academica:
+    tier: common
+    label: "Gestion academico-administrativa (jefatura de departamento)"
+    risk_domain: expedientes_escolares_administrativos
+    categories: [document, template, database, rag, utilidad]
+    status: partial
+    packs: []
+    capabilities: ["generar oficios constancias y cartas con numeracion", "consultar la base academica de alumnos docentes y materias", "consultar la normativa institucional", "analizar tasas de reprobacion y alertas", "gestionar horarios academicos"]
+  atencion_cliente:
+    tier: common
+    label: "Atencion a cliente / soporte"
+    risk_domain: ventas_datos_clientes
+    categories: [document, template, outbox, database]
+    status: planned
+    packs: []
+    capabilities: ["buscar una respuesta en la base de preguntas frecuentes", "registrar un ticket de soporte", "responder con una plantilla", "escalar a un humano", "consultar el estado de un pedido o caso"]
+  ventas_crm:
+    tier: common
+    label: "Ventas / CRM"
+    risk_domain: ventas_datos_clientes
+    categories: [database, outbox, template]
+    status: planned
+    packs: []
+    capabilities: ["registrar un prospecto o lead", "buscar un contacto", "generar una cotizacion", "agendar un seguimiento", "calcular un descuento o total"]
+  recursos_humanos:
+    tier: common
+    label: "Recursos humanos / reclutamiento"
+    risk_domain: recursos_humanos_internos
+    categories: [document, database, scheduler]
+    status: planned
+    packs: []
+    capabilities: ["publicar una vacante", "registrar un candidato", "cribar un cv contra requisitos", "generar un checklist de onboarding", "registrar asistencia"]
+  operacion_hotelera:
+    tier: common
+    label: "Operacion hotelera"
+    risk_domain: ventas_datos_clientes
+    categories: [database, document, outbox]
+    status: planned
+    packs: []
+    capabilities: ["consultar reservas y disponibilidad de habitaciones", "registrar un huesped", "realizar check-in y check-out", "generar una factura o comprobante de estancia"]
+  legal_documentos:
+    tier: occasional
+    label: "Documentos legales"
+    risk_domain: documentos_legales_simples
+    categories: [document, template]
+    status: planned
+    packs: []
+    capabilities: ["analizar un contrato", "extraer clausulas", "comparar versiones de un documento", "generar un documento legal desde plantilla"]
+  educacion:
+    tier: occasional
+    label: "Educacion / tutoria"
+    risk_domain: programming_education
+    categories: [document, rag, utilidad]
+    status: planned
+    packs: []
+    capabilities: ["explicar un tema", "generar preguntas de practica", "evaluar una respuesta", "buscar material en documentos"]
+  logistica:
+    tier: rare
+    label: "Logistica e inventario"
+    risk_domain: inventario_basico
+    categories: [database, scheduler]
+    status: planned
+    packs: []
+    capabilities: ["consultar inventario", "registrar entrada o salida de stock", "rastrear un envio"]
+  automatizacion_navegador:
+    tier: common
+    label: "Automatizacion de navegador"
+    risk_domain: automatizacion_navegador
+    categories: [navegador]
+    status: active
+    packs: [browser_core]
+    capabilities: ["abrir una pagina web en el navegador", "tomar una captura de la pagina", "leer el texto o el html de la pagina", "hacer clic en un elemento por selector", "escribir texto en un campo", "hacer clic o desplazar por coordenadas en la pantalla", "rellenar y enviar un formulario web"]
+  salud_clinica:
+    tier: common
+    label: "Apoyo clinico (historial, sin diagnostico autonomo)"
+    risk_domain: medicina
+    categories: [medico, database, rag, document, investigacion]
+    status: active
+    packs: [medical_core]
+    capabilities: ["resumir el historial clinico de un paciente", "redactar datos personales sensibles", "normalizar unidades clinicas", "extraer medicamentos y dosis de un texto", "buscar guias clinicas y citar fuentes", "solicitar la revision de un medico con licencia"]

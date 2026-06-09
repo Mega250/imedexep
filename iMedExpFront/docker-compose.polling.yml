@@ -1,0 +1,5 @@
+services:
+  imedexp-front:
+    environment:
+      WATCHPACK_POLLING: "true"
+      CHOKIDAR_USEPOLLING: "true"

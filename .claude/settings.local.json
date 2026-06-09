@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker exec:*)",
+      "Bash(ls /home/mariano/imedexep/docker-compose*.yml)",
+      "Bash(ls /home/mariano/imedexep/*.yml)"
+    ]
+  }
+}

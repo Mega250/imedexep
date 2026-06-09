@@ -1,0 +1,23 @@
+manifest_id: crossref
+owner: "Crossref (metadatos academicos de publicaciones, API publica sin credenciales)"
+base_url: "https://api.crossref.org"
+auth:
+  type: none
+data_classification: public
+risk_level: A
+requires_human_developer: false
+requires_audit: true
+allowed_roles: ["*"]
+allowed_endpoints:
+  - name: buscar_publicaciones
+    path: "/works"
+    method: GET
+    pii_level: none
+    required_scopes: []
+    aggregate_only: false
+    response_fields: []
+    rate_limit_per_min: 20
+    requires_audit: true
+forbidden_endpoints: []
+state: active
+version: 1

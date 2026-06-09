@@ -1,0 +1,17 @@
+version: 1
+max_steps: 8
+flows:
+  frontier:
+    pre: []
+    validate_plan: false
+    post: [responder]
+  mid:
+    pre: [context_check]
+    validate_plan: true
+    resolve_args: true
+    post: [responder]
+  small:
+    pre: [anaphora_resolver, context_check]
+    validate_plan: true
+    resolve_args: true
+    post: [responder]

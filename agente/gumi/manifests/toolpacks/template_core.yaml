@@ -1,0 +1,10 @@
+pack_id: template_core
+description: "Template/Form Engine: TemplateManifest, binding de datos, preview y render seguro de DOCX/PDF."
+tools:
+  - template.intake
+  - template.detect_fields
+  - template.validate_manifest
+  - template.bind_data
+  - template.preview_diff
+  - template.render
+  - template.export

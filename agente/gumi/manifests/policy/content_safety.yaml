@@ -1,0 +1,15 @@
+version: 1
+enabled: true
+provider: nvidia
+model_id: nvidia/Nemotron-Content-Safety-VL-v4
+served_model_name: nemotron_moderator
+api_key_env: GUMI_NVIDIA_API_KEY
+multimodal: true
+moderate_input: true
+moderate_response: true
+request_categories: true
+on_unsafe:
+  input: block
+  response: redact
+escalate_categories: [explotacion_de_menores, armas_explosivos_dano_fisico, autolesion_dano_a_terceros]
+audit: true

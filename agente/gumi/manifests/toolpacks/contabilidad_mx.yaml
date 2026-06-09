@@ -1,0 +1,27 @@
+pack_id: contabilidad_mx
+description: "Contabilidad fiscal Mexico: parseo y validacion de CFDI 4.0, verificacion de sello, desglose y calculo de impuestos (IVA/ISR)."
+tools:
+  - cfdi.parse
+  - cfdi.validar_estructura
+  - cfdi.verificar_sello
+  - cfdi.extraer_uuid
+  - cfdi.extraer_impuestos
+  - cfdi.validar_totales
+  - cfdi.detectar_complementos
+  - impuestos.calcular_iva
+  - impuestos.calcular_retencion_iva
+  - impuestos.calcular_retencion_isr
+  - catalogos.validar_regimen
+  - catalogos.validar_uso_cfdi
+  - catalogos.validar_forma_pago
+  - catalogos.buscar_clave_prodserv
+  - catalogos.lookup
+  - listas.consultar_69b
+  - listas.actualizar_69b
+  - obligaciones.resumen_iva_mensual
+  - obligaciones.preparar_diot
+  - sat.consultar_estatus
+  - sat.timbrar
+  - sat.cancelar
+  - sat.descarga_masiva
+  - cfdi.sellar

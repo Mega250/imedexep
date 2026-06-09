@@ -1,0 +1,29 @@
+version: 1
+defaults:
+  fuzzy_tool_name_min_ratio: 88
+  max_retries: 2
+  retry_only_if_transient: true
+  list_default_limit: 50
+  list_max_limit: 500
+  reformulate_min_sim_short: 0.35
+  reformulate_min_sim_long: 0.55
+  context_min_grounding: 0.5
+  retrieval:
+    weights: { lexical: 0.48, semantic: 0.29, intent: 0.08, exact_name: 0.05 }
+    min_score: 0.0
+    top_k: 16
+    family_cap: 5
+    stopwords: [crea, crear, agente, para, que, los, las, del, una, con, por, sin, como, debe, este, esta, the, and]
+  deliberation:
+    max_attempts: 3
+    require_tools: true
+    require_mission: true
+tiers:
+  small:
+    enable_tool_name_repair: true
+    family_cap: 3
+    tool_shortlist_top_k: 8
+  mid:
+    enable_tool_name_repair: true
+  frontier:
+    enable_tool_name_repair: true

@@ -1,0 +1,79 @@
+stages:
+  - test
+  - security
+  - infra
+
+test_backend:
+  stage: test
+  image: python:3.12-slim
+  variables:
+    GIT_DEPTH: 0
+  before_script:
+    - apt-get update && apt-get install -y git -qq
+    - pip install --upgrade pip -q
+    - pip install -r requirements.txt -q
+    - pip install pytest pytest-asyncio httpx pytest-cov diff-cover -q
+  script:
+    - export PYTHONPATH=$PWD
+    - pytest tests/ -v --cov=app --cov-report=xml --cov-fail-under=65
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feat\/.*/'
+    - if: '$CI_COMMIT_BRANCH =~ /^fix\/.*/'
+
+dependency_audit:
+  stage: security
+  image: python:3.12-slim
+  before_script:
+    - pip install --upgrade pip -q
+    - pip install pip-audit -q
+  script:
+    - pip-audit -r requirements.txt
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feat\/.*/'
+    - if: '$CI_COMMIT_BRANCH =~ /^fix\/.*/'
+
+container_and_fs_scan:
+  stage: security
+  image:
+    name: aquasec/trivy:latest
+    entrypoint: [""]
+  script:
+    - trivy fs --exit-code 1 --severity HIGH,CRITICAL --ignore-unfixed .
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feat\/.*/'
+    - if: '$CI_COMMIT_BRANCH =~ /^fix\/.*/'
+
+helm_lint:
+  stage: infra
+  image:
+    name: alpine/helm:3.17.0
+    entrypoint: [""]
+  script:
+    - helm lint infra/helm/imedexp-api
+    - helm template imedexp-api infra/helm/imedexp-api >/tmp/imedexp-api-rendered.yaml
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feat\/.*/'
+    - if: '$CI_COMMIT_BRANCH =~ /^fix\/.*/'
+
+terraform_validate:
+  stage: infra
+  image:
+    name: hashicorp/terraform:1.10
+    entrypoint: [""]
+  script:
+    - terraform -chdir=infra/terraform/kubernetes fmt -check
+    - terraform -chdir=infra/terraform/kubernetes init -backend=false
+    - terraform -chdir=infra/terraform/kubernetes validate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_BRANCH =~ /^feat\/.*/'
+    - if: '$CI_COMMIT_BRANCH =~ /^fix\/.*/'

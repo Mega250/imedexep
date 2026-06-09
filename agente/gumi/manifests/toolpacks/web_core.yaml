@@ -1,0 +1,6 @@
+pack_id: web_core
+description: "Web de solo lectura con guard SSRF (bloquea IPs privadas/loopback/reservadas): buscar en la web, descargar el texto de una URL publica y extraer texto de HTML."
+tools:
+  - web.search
+  - web.fetch
+  - web.extract_text

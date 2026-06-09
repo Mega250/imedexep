@@ -1,0 +1,2 @@
+ALTER TABLE screen_block
+    ADD COLUMN IF NOT EXISTS blocked BOOLEAN NOT NULL DEFAULT true;

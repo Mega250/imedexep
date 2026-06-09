@@ -1,0 +1,31 @@
+version: 1
+runtime_version: "0.1.0"
+default_export_mode: frozen_runtime
+signature:
+  algorithm: sha256
+  signed_by: gumi-builder
+lock:
+  freeze: true
+package_layout:
+  spec_file: agent.spec.json
+  lock_file: agent.lock.json
+  prompts_dir: prompts
+  policies_dir: policies
+  manifests_dir: manifests
+  tools_dir: tools
+  runtime_dir: runtime
+  docker_dir: docker
+docker:
+  runtime_image: gumi-runtime:0.1.0
+  expose_port: 8080
+  run_as_user: 1000
+  hardening:
+    no_new_privileges: true
+    read_only: true
+    cap_drop: [ALL]
+frozen_runtime:
+  include: [spec, lock, prompts, policies, manifests, tools, runtime, docker, env_example]
+  exclude_secrets: true
+editable_project:
+  include: [spec, lock, prompts, policies, manifests, tools, runtime, docker, env_example, readme]
+  exclude_secrets: true

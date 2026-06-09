@@ -1,0 +1,59 @@
+@startuml
+title iMedExp Backend - Diagrama UML de Despliegue
+skinparam shadowing false
+
+cloud "Internet" as Internet
+node "WAF/CDN\nCloudflare o AWS WAF" as WAF
+node "Ingress Controller\nNGINX/ALB" as Ingress
+
+node "Kubernetes Cluster" as Cluster {
+  node "Namespace: imedexp" as Namespace {
+    node "Deployment: imedexp-api" as Deployment {
+      node "Pod API #1" as Pod1 {
+        artifact "FastAPI container" as API1
+      }
+      node "Pod API #N" as PodN {
+        artifact "FastAPI container" as APIN
+      }
+    }
+    node "Service: imedexp-api" as Service
+    node "HPA" as HPA
+    node "NetworkPolicy" as NetworkPolicy
+    node "Secret: imedexp-api-secrets" as K8sSecret
+    node "ConfigMap: imedexp-api-config" as ConfigMap
+  }
+
+  node "Namespace: monitoring" as Monitoring {
+    artifact "Prometheus" as Prometheus
+    artifact "Grafana" as Grafana
+    artifact "Alertmanager" as Alertmanager
+  }
+}
+
+database "PostgreSQL administrado\nprivado, cifrado, backups" as PostgreSQL
+node "Proveedor SMTP" as SMTP
+node "Gestor de Secretos\nVault/Cloud Secret Manager" as SecretManager
+node "CI/CD\nGitLab Pipeline" as CICD
+
+Internet --> WAF : HTTPS
+WAF --> Ingress : HTTPS filtrado
+Ingress --> Service : HTTP interno
+Service --> API1
+Service --> APIN
+API1 --> PostgreSQL : SQL/TLS
+APIN --> PostgreSQL : SQL/TLS
+API1 --> SMTP : envio de correo
+APIN --> SMTP : envio de correo
+Prometheus --> Service : GET /metrics
+Grafana --> Prometheus : consultas
+Prometheus --> Alertmanager : alertas
+SecretManager --> K8sSecret : sincronizacion operativa
+ConfigMap --> API1
+ConfigMap --> APIN
+K8sSecret --> API1
+K8sSecret --> APIN
+HPA --> Deployment : escala replicas
+NetworkPolicy --> Deployment : restringe trafico
+CICD --> Cluster : helm upgrade
+CICD --> PostgreSQL : migraciones controladas
+@enduml

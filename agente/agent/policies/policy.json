@@ -1,0 +1,36 @@
+{
+  "approval_ref": null,
+  "forbidden_capabilities": [
+    "autonomous_diagnosis",
+    "autonomous_treatment",
+    "emergency_triage",
+    "medication_dosing",
+    "modify_clinical_record_without_review",
+    "prescribe_treatment"
+  ],
+  "human_review_points": [
+    "audit",
+    "block_irreversible_actions",
+    "explain_limits",
+    "human_expert",
+    "no_full_autonomy",
+    "prior_evaluation",
+    "source_verification"
+  ],
+  "meta_permissions": {
+    "can_create_child_agents": false,
+    "can_create_recursive_agents": false,
+    "can_disable_audit": false,
+    "can_draft_agent_specs": false,
+    "can_modify_own_policy": false,
+    "can_register_or_compile_agents": false,
+    "can_request_agent_creation": false
+  },
+  "policy_decision_ref": "c5a11e5ac0e84a6e80e57fa17b33e22b",
+  "runtime_policy": {
+    "filesystem": "temporary_workspace_only",
+    "max_execution_time_seconds": 30,
+    "network": "disabled_by_default",
+    "requires_human_confirmation_for": []
+  }
+}

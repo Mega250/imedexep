@@ -1,0 +1,401 @@
+version: 1
+functions:
+  buscar_conocimiento:
+    import_path: gumi.platform.toolpack.rag_search:buscar_conocimiento
+    injected_keys: [agent_id, db]
+    card: { category: rag, side_effects: false, risk: low, use_when: "Buscar en la base de conocimiento del agente." }
+  db.import_sql_sandbox:
+    import_path: gumi.platform.toolpack.db_core:import_sql_sandbox
+    card: { category: database, side_effects: true, risk: medium, use_when: "Importar un .sql en una base temporal aislada." }
+  db.introspect_schema:
+    import_path: gumi.platform.toolpack.db_core:introspect_schema
+    card: { category: database, side_effects: false, risk: low }
+  db.generate_data_manifest:
+    import_path: gumi.platform.toolpack.db_core:generate_data_manifest
+    injected_keys: [agent_id, db]
+    card: { category: database, side_effects: false, risk: low }
+  db.validate_data_manifest:
+    import_path: gumi.platform.toolpack.db_core:validate_data_manifest
+    injected_keys: [agent_id, db]
+    card: { category: database, side_effects: false, risk: low }
+  db.create_record:
+    import_path: gumi.platform.toolpack.db_core:create_record
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: true, risk: medium, use_when: "Insertar un registro via manifest verificado." }
+    pii_level: medium
+  db.update_record:
+    import_path: gumi.platform.toolpack.db_core:update_record
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: true, risk: medium }
+    pii_level: medium
+  db.delete_record:
+    import_path: gumi.platform.toolpack.db_core:delete_record
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: true, risk: high }
+    pii_level: medium
+  db.list_records:
+    import_path: gumi.platform.toolpack.db_core:list_records
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: false, risk: low }
+  db.safe_read_query:
+    import_path: gumi.platform.toolpack.db_core:safe_read_query
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: false, risk: medium, use_when: "SQL de solo lectura validado por AST." }
+  db.analytics:
+    import_path: gumi.platform.toolpack.db_core:analytics
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: false, risk: low }
+  db.transaction:
+    import_path: gumi.platform.toolpack.db_core:transaction
+    injected_keys: [agent_id, db, manifest]
+    card: { category: database, side_effects: true, risk: high }
+  document.intake:
+    import_path: gumi.platform.toolpack.document_core:intake
+    card: { category: document, side_effects: true, risk: low }
+  document.extract:
+    import_path: gumi.platform.toolpack.document_core:extract
+    card: { category: document, side_effects: false, risk: low }
+  document.classify:
+    import_path: gumi.platform.toolpack.document_core:classify
+    card: { category: document, side_effects: false, risk: low }
+  document.structure:
+    import_path: gumi.platform.toolpack.document_core:structure
+    card: { category: document, side_effects: false, risk: low }
+  document.semantic_manifest:
+    import_path: gumi.platform.toolpack.document_core:semantic_manifest
+    card: { category: document, side_effects: false, risk: low }
+  document.query:
+    import_path: gumi.platform.toolpack.document_core:query
+    card: { category: document, side_effects: false, risk: low }
+  document.cite:
+    import_path: gumi.platform.toolpack.document_core:cite
+    card: { category: document, side_effects: false, risk: low }
+  document.validate:
+    import_path: gumi.platform.toolpack.document_core:validate
+    card: { category: document, side_effects: false, risk: low }
+  template.intake:
+    import_path: gumi.platform.toolpack.template_core:intake
+    card: { category: template, side_effects: true, risk: low }
+  template.detect_fields:
+    import_path: gumi.platform.toolpack.template_core:detect_fields
+    card: { category: template, side_effects: false, risk: low }
+  template.validate_manifest:
+    import_path: gumi.platform.toolpack.template_core:validate_manifest
+    card: { category: template, side_effects: false, risk: low }
+  template.bind_data:
+    import_path: gumi.platform.toolpack.template_core:bind_data
+    card: { category: template, side_effects: false, risk: low }
+  template.preview_diff:
+    import_path: gumi.platform.toolpack.template_core:preview_diff
+    card: { category: template, side_effects: false, risk: low }
+  template.render:
+    import_path: gumi.platform.toolpack.template_core:render
+    card: { category: template, side_effects: true, risk: medium }
+  template.export:
+    import_path: gumi.platform.toolpack.template_core:export
+    card: { category: template, side_effects: true, risk: medium }
+  auth.whoami:
+    import_path: gumi.platform.toolpack.identity_core:whoami
+    card: { category: identity, side_effects: false, risk: low }
+  auth.check_permission:
+    import_path: gumi.platform.toolpack.identity_core:check_permission
+    card: { category: identity, side_effects: false, risk: low }
+  secrets.get_runtime_secret:
+    import_path: gumi.platform.toolpack.identity_core:get_runtime_secret
+    card: { category: identity, side_effects: false, risk: high, do_not_use_when: "El valor del secreto nunca se expone al LLM." }
+  permissions.require_human_approval:
+    import_path: gumi.platform.toolpack.identity_core:require_human_approval
+    card: { category: identity, side_effects: false, risk: low }
+  approval.request:
+    import_path: gumi.platform.toolpack.identity_core:approval_request
+    card: { category: approval, side_effects: true, risk: low }
+  approval.wait:
+    import_path: gumi.platform.toolpack.identity_core:approval_wait
+    card: { category: approval, side_effects: false, risk: low }
+  approval.record_decision:
+    import_path: gumi.platform.toolpack.identity_core:approval_record_decision
+    card: { category: approval, side_effects: true, risk: low }
+  audit.log_event:
+    import_path: gumi.platform.toolpack.audit_core:log_event
+    card: { category: audit, side_effects: true, risk: low }
+  audit.log_tool_call:
+    import_path: gumi.platform.toolpack.audit_core:log_tool_call
+    card: { category: audit, side_effects: true, risk: low }
+  audit.export_run_trace:
+    import_path: gumi.platform.toolpack.audit_core:export_run_trace
+    card: { category: audit, side_effects: false, risk: low }
+  scheduler.create_job:
+    import_path: gumi.platform.toolpack.scheduler_core:create_job
+    card: { category: scheduler, side_effects: true, risk: medium }
+  scheduler.pause_job:
+    import_path: gumi.platform.toolpack.scheduler_core:pause_job
+    card: { category: scheduler, side_effects: true, risk: low }
+  scheduler.run_now:
+    import_path: gumi.platform.toolpack.scheduler_core:run_now
+    card: { category: scheduler, side_effects: true, risk: medium }
+  scheduler.list_jobs:
+    import_path: gumi.platform.toolpack.scheduler_core:list_jobs
+    card: { category: scheduler, side_effects: false, risk: low }
+  outbox.create_draft:
+    import_path: gumi.platform.toolpack.outbox_core:create_draft
+    card: { category: outbox, side_effects: true, risk: low }
+  outbox.send_after_approval:
+    import_path: gumi.platform.toolpack.outbox_core:send_after_approval
+    card: { category: outbox, side_effects: true, risk: high }
+  outbox.list_pending:
+    import_path: gumi.platform.toolpack.outbox_core:list_pending
+    card: { category: outbox, side_effects: false, risk: low }
+  sandbox.run_code:
+    import_path: gumi.platform.toolpack.sandbox_core:run_code
+    card: { category: sandbox, side_effects: true, risk: medium }
+  sandbox.run_tests:
+    import_path: gumi.platform.toolpack.sandbox_core:run_tests
+    card: { category: sandbox, side_effects: true, risk: medium }
+  sandbox.static_analysis:
+    import_path: gumi.platform.toolpack.sandbox_core:static_analysis
+    card: { category: sandbox, side_effects: false, risk: low }
+  cfdi.parse:
+    import_path: gumi.platform.toolpack.contabilidad_mx:parse_cfdi
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Parsear un CFDI 4.0 (XML) y extraer emisor, receptor, total y UUID.", inputs: [xml] }
+    pii_level: medium
+  cfdi.validar_estructura:
+    import_path: gumi.platform.toolpack.contabilidad_mx:validar_estructura_cfdi
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Validar que un CFDI cumpla la estructura 4.0.", inputs: [xml] }
+  cfdi.verificar_sello:
+    import_path: gumi.platform.toolpack.contabilidad_mx:verificar_sello_cfdi
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Verificar el sello digital de un CFDI con el certificado incrustado.", inputs: [xml] }
+  cfdi.extraer_uuid:
+    import_path: gumi.platform.toolpack.contabilidad_mx:extraer_uuid
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Extraer el folio fiscal UUID y los datos del timbre.", inputs: [xml] }
+    pii_level: low
+  cfdi.extraer_impuestos:
+    import_path: gumi.platform.toolpack.contabilidad_mx:extraer_impuestos
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Desglosar los impuestos trasladados y retenidos de un CFDI.", inputs: [xml] }
+  cfdi.validar_totales:
+    import_path: gumi.platform.toolpack.contabilidad_mx:validar_totales_cfdi
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Recalcular y verificar que subtotal y total de un CFDI cuadren.", inputs: [xml] }
+  cfdi.detectar_complementos:
+    import_path: gumi.platform.toolpack.contabilidad_mx:detectar_complementos
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Listar los complementos presentes en un CFDI.", inputs: [xml] }
+  impuestos.calcular_iva:
+    import_path: gumi.platform.toolpack.contabilidad_mx:calcular_iva
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Calcular el IVA trasladado sobre una base.", inputs: [base, tasa] }
+  impuestos.calcular_retencion_iva:
+    import_path: gumi.platform.toolpack.contabilidad_mx:calcular_retencion_iva
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Calcular la retencion de IVA sobre una base.", inputs: [base, fraccion] }
+  impuestos.calcular_retencion_isr:
+    import_path: gumi.platform.toolpack.contabilidad_mx:calcular_retencion_isr
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Calcular la retencion de ISR sobre una base.", inputs: [base, tasa] }
+  catalogos.validar_regimen:
+    import_path: gumi.platform.toolpack.contabilidad_catalogos:validar_regimen
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Validar una clave de regimen fiscal del SAT.", inputs: [clave] }
+  catalogos.validar_uso_cfdi:
+    import_path: gumi.platform.toolpack.contabilidad_catalogos:validar_uso_cfdi
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Validar la clave de UsoCFDI de un comprobante.", inputs: [uso, regimen] }
+  catalogos.validar_forma_pago:
+    import_path: gumi.platform.toolpack.contabilidad_catalogos:validar_forma_pago
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Validar la clave de forma de pago del SAT.", inputs: [clave] }
+  catalogos.buscar_clave_prodserv:
+    import_path: gumi.platform.toolpack.contabilidad_catalogos:buscar_clave_prodserv
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Buscar una clave de producto o servicio del SAT y su descripcion.", inputs: [clave] }
+  catalogos.lookup:
+    import_path: gumi.platform.toolpack.contabilidad_catalogos:lookup
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Resolver una clave de cualquier catalogo del SAT a su descripcion.", inputs: [catalogo, clave] }
+  listas.consultar_69b:
+    import_path: gumi.platform.toolpack.contabilidad_listas:consultar_69b
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Consultar si un RFC esta en la lista negra 69-B (EFOS, empresas que facturan operaciones simuladas) del SAT.", inputs: [rfc] }
+    pii_level: low
+  listas.actualizar_69b:
+    import_path: gumi.platform.toolpack.contabilidad_listas:actualizar_69b
+    card: { category: contabilidad, side_effects: true, risk: low, use_when: "Descargar y cachear la lista 69-B del SAT.", inputs: [] }
+  obligaciones.resumen_iva_mensual:
+    import_path: gumi.platform.toolpack.contabilidad_obligaciones:resumen_iva_mensual
+    card: { category: contabilidad, side_effects: false, risk: medium, use_when: "Calcular el IVA del mes: causado (ventas) vs acreditable (compras) sobre un lote de CFDIs.", inputs: [emitidos, recibidos] }
+    pii_level: medium
+  obligaciones.preparar_diot:
+    import_path: gumi.platform.toolpack.contabilidad_obligaciones:preparar_diot
+    card: { category: contabilidad, side_effects: false, risk: medium, use_when: "Preparar el resumen de la DIOT (IVA por proveedor) desde un lote de CFDIs recibidos.", inputs: [recibidos] }
+    pii_level: medium
+  sat.consultar_estatus:
+    import_path: gumi.platform.toolpack.contabilidad_sat:consultar_estatus
+    card: { category: contabilidad, side_effects: false, risk: low, use_when: "Consultar en el SAT si un CFDI esta vigente o cancelado (servicio publico).", inputs: [rfc_emisor, rfc_receptor, total, uuid] }
+    pii_level: low
+  sat.timbrar:
+    import_path: gumi.platform.toolpack.contabilidad_sat:timbrar
+    card: { category: contabilidad, side_effects: true, risk: high, use_when: "Timbrar (certificar) un CFDI ante el SAT via PAC: emite un comprobante fiscal REAL.", do_not_use_when: "Sin aprobacion humana y CSD del contribuyente.", inputs: [xml] }
+    pii_level: high
+  sat.cancelar:
+    import_path: gumi.platform.toolpack.contabilidad_sat:cancelar
+    card: { category: contabilidad, side_effects: true, risk: high, use_when: "Cancelar un CFDI ante el SAT (efecto fiscal irreversible).", do_not_use_when: "Sin aprobacion humana y CSD.", inputs: [uuid, motivo] }
+    pii_level: high
+  sat.descarga_masiva:
+    import_path: gumi.platform.toolpack.contabilidad_sat:descarga_masiva
+    card: { category: contabilidad, side_effects: true, risk: high, use_when: "Descargar masivamente los CFDIs del contribuyente desde el SAT (requiere e.firma).", inputs: [fecha_inicio, fecha_fin] }
+    pii_level: high
+  cfdi.sellar:
+    import_path: gumi.platform.toolpack.contabilidad_sat:sellar
+    card: { category: contabilidad, side_effects: true, risk: high, use_when: "Sellar un CFDI con el CSD del contribuyente (firma con llave privada).", do_not_use_when: "Sin aprobacion humana y CSD.", inputs: [xml] }
+    pii_level: high
+  research.buscar_arxiv:
+    import_path: gumi.platform.toolpack.research_core:buscar_arxiv
+    card: { category: investigacion, side_effects: false, risk: medium, use_when: "Buscar papers academicos recientes en arXiv por palabras clave; devuelve titulo, autores, anio, URL y resumen.", do_not_use_when: "Se necesita literatura ya descargada localmente (usar research.extraer_pdf).", inputs: [consulta, max_resultados] }
+  research.deep_research:
+    import_path: gumi.platform.toolpack.deep_core:deep_research
+    card: { category: investigacion, side_effects: false, risk: medium, use_when: "Investigacion profunda multi-fuente (web + arXiv + Crossref + base local) que LEE el contenido de las fuentes, extrae evidencia citada [n] e itera en rondas adaptativas hasta cubrir el tema; produce un informe con citas y una seccion de lagunas. Para preguntas amplias que requieren sintetizar varias fuentes.", do_not_use_when: "Basta una busqueda puntual (usar web.search) o el dato ya esta en la base local ingerida (usar rag.buscar).", inputs: [tema, max_rondas, fuentes_por_query, idioma] }
+  research.formato_cita:
+    import_path: gumi.platform.toolpack.research_core:formato_cita
+    card: { category: investigacion, side_effects: false, risk: low, use_when: "Formatear una cita bibliografica (APA o IEEE) a partir de autores, titulo, anio y fuente.", inputs: [autores, titulo, anio, fuente, estilo] }
+  research.priorizar_lineas:
+    import_path: gumi.platform.toolpack.research_core:priorizar_lineas
+    card: { category: investigacion, side_effects: false, risk: low, use_when: "Ordenar y elegir las top_n lineas de investigacion por un criterio como novedad o factibilidad.", inputs: [lineas, top_n, criterio] }
+  research.extraer_pdf:
+    import_path: gumi.platform.toolpack.research_core:extraer_pdf
+    card: { category: investigacion, side_effects: false, risk: low, use_when: "Extraer el texto de un PDF local por pagina para leer papers, manuales o documentos.", inputs: [path, max_paginas] }
+  research.buscar_en_documento:
+    import_path: gumi.platform.toolpack.research_core:buscar_en_documento
+    card: { category: investigacion, side_effects: false, risk: low, use_when: "Buscar una consulta dentro de un documento PDF y devolver fragmentos con su numero de pagina (cita).", inputs: [path, consulta, top_k] }
+  research.guardar_nota:
+    import_path: gumi.platform.toolpack.research_core:guardar_nota
+    card: { category: investigacion, side_effects: true, risk: low, use_when: "Guardar una nota o linea de investigacion en la memoria del agente.", inputs: [clave, contenido] }
+  datetime.now:
+    import_path: gumi.platform.toolpack.datetime_core:now
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Obtener la fecha y hora actual (ISO) y el dia de la semana.", inputs: [] }
+  datetime.parse:
+    import_path: gumi.platform.toolpack.datetime_core:parse
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Interpretar una fecha escrita en texto (ISO, dd/mm/aaaa o '5 de junio de 2026') a formato ISO.", inputs: [texto] }
+  datetime.format:
+    import_path: gumi.platform.toolpack.datetime_core:format
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Reformatear una fecha a un patron strftime dado.", inputs: [fecha, formato] }
+  datetime.diff:
+    import_path: gumi.platform.toolpack.datetime_core:diff
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Calcular la diferencia entre dos fechas en dias, horas, minutos o semanas.", inputs: [fecha1, fecha2, unidad] }
+  datetime.add:
+    import_path: gumi.platform.toolpack.datetime_core:add
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Sumar o restar una cantidad de dias/horas/semanas a una fecha.", inputs: [fecha, cantidad, unidad] }
+  datetime.weekday:
+    import_path: gumi.platform.toolpack.datetime_core:weekday
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Obtener el dia de la semana de una fecha.", inputs: [fecha] }
+  text.normalize:
+    import_path: gumi.platform.toolpack.text_core:normalize
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Normalizar texto: minusculas, sin acentos y espacios colapsados.", inputs: [texto] }
+  text.count:
+    import_path: gumi.platform.toolpack.text_core:count
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Contar caracteres, palabras y lineas de un texto.", inputs: [texto] }
+  text.extract:
+    import_path: gumi.platform.toolpack.text_core:extract
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Extraer entidades de un texto: email, url, numero, telefono o rfc.", inputs: [texto, tipo] }
+  text.slugify:
+    import_path: gumi.platform.toolpack.text_core:slugify
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Convertir un texto en un slug seguro para URLs o identificadores.", inputs: [texto] }
+  text.truncate:
+    import_path: gumi.platform.toolpack.text_core:truncate
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Truncar un texto a n caracteres con puntos suspensivos.", inputs: [texto, n] }
+  text.split:
+    import_path: gumi.platform.toolpack.text_core:split
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Dividir un texto en una lista por un separador.", inputs: [texto, separador] }
+  text.replace:
+    import_path: gumi.platform.toolpack.text_core:replace
+    card: { category: utilidad, side_effects: false, risk: low, use_when: "Reemplazar todas las apariciones de un fragmento en un texto.", inputs: [texto, buscar, reemplazo] }
+  file.read:
+    import_path: gumi.platform.toolpack.file_core:read
+    card: { category: archivos, side_effects: false, risk: low, use_when: "Leer el texto de un archivo dentro del workspace del agente.", inputs: [ruta] }
+  file.write:
+    import_path: gumi.platform.toolpack.file_core:write
+    card: { category: archivos, side_effects: true, risk: medium, use_when: "Escribir texto a un archivo dentro del workspace (sobrescribe).", inputs: [ruta, contenido] }
+  file.append:
+    import_path: gumi.platform.toolpack.file_core:append
+    card: { category: archivos, side_effects: true, risk: medium, use_when: "Anexar texto al final de un archivo del workspace.", inputs: [ruta, contenido] }
+  file.list:
+    import_path: gumi.platform.toolpack.file_core:list_files
+    card: { category: archivos, side_effects: false, risk: low, use_when: "Listar los archivos de un directorio dentro del workspace.", inputs: [directorio] }
+  file.exists:
+    import_path: gumi.platform.toolpack.file_core:exists
+    card: { category: archivos, side_effects: false, risk: low, use_when: "Comprobar si una ruta existe en el workspace.", inputs: [ruta] }
+  web.search:
+    import_path: gumi.platform.toolpack.web_core:search
+    card: { category: web, side_effects: false, risk: medium, use_when: "Buscar en la web informacion actual o externa por palabras clave; devuelve titulos, URLs y fragmentos.", do_not_use_when: "El conocimiento ya esta en los documentos o la base de datos del agente.", inputs: [query, max_results] }
+  web.fetch:
+    import_path: gumi.platform.toolpack.web_core:fetch
+    card: { category: web, side_effects: false, risk: medium, use_when: "Descargar el texto de una URL publica http/https (bloquea IPs internas por SSRF).", inputs: [url] }
+  web.extract_text:
+    import_path: gumi.platform.toolpack.web_core:extract_text
+    card: { category: web, side_effects: false, risk: low, use_when: "Extraer el texto plano de un fragmento HTML.", inputs: [html] }
+  math.calcular:
+    import_path: gumi.platform.toolpack.math_core:calcular
+    card: { category: calculo, side_effects: false, risk: low, use_when: "Evaluar una expresion aritmetica de forma segura (sumar, restar, multiplicar, dividir, potencias).", inputs: [expresion] }
+  math.porcentaje:
+    import_path: gumi.platform.toolpack.math_core:porcentaje
+    card: { category: calculo, side_effects: false, risk: low, use_when: "Calcular el porcentaje de un valor (descuentos, comisiones, impuestos genericos).", inputs: [valor, porcentaje] }
+  math.regla_de_tres:
+    import_path: gumi.platform.toolpack.math_core:regla_de_tres
+    card: { category: calculo, side_effects: false, risk: low, use_when: "Resolver una proporcion regla de tres: si a corresponde a b, c corresponde a cuanto.", inputs: [a, b, c] }
+  math.estadistica:
+    import_path: gumi.platform.toolpack.math_core:estadistica
+    card: { category: calculo, side_effects: false, risk: low, use_when: "Calcular suma promedio mediana minimo y maximo de una lista de numeros.", inputs: [numeros] }
+  math.redondear:
+    import_path: gumi.platform.toolpack.math_core:redondear
+    card: { category: calculo, side_effects: false, risk: low, use_when: "Redondear un numero a una cantidad de decimales.", inputs: [valor, decimales] }
+  browser.navigate:
+    import_path: gumi.platform.toolpack.browser_core:navigate
+    card: { category: navegador, side_effects: false, risk: medium, use_when: "Abrir una URL en el navegador para interactuar con la pagina (solo dominios de la allowlist).", do_not_use_when: "El contenido se puede obtener con web.fetch sin interaccion.", inputs: [url] }
+  browser.snapshot:
+    import_path: gumi.platform.toolpack.browser_core:snapshot
+    card: { category: navegador, side_effects: false, risk: low, use_when: "Tomar una captura de la pagina actual para que un modelo multimodal la interprete (devuelve imagen base64).", inputs: [] }
+  browser.read_text:
+    import_path: gumi.platform.toolpack.browser_core:read_text
+    card: { category: navegador, side_effects: false, risk: low, use_when: "Leer el texto visible de la pagina actual o de un elemento por selector CSS.", inputs: [selector] }
+  browser.scroll:
+    import_path: gumi.platform.toolpack.browser_core:scroll
+    card: { category: navegador, side_effects: false, risk: low, use_when: "Desplazar la pagina verticalmente para revelar mas contenido.", inputs: [dy] }
+  browser.click:
+    import_path: gumi.platform.toolpack.browser_core:click
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Hacer clic en un elemento por selector CSS.", do_not_use_when: "Sin aprobacion humana para acciones con efecto.", inputs: [selector] }
+  browser.fill:
+    import_path: gumi.platform.toolpack.browser_core:fill
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Escribir texto en un campo por selector CSS.", inputs: [selector, text] }
+  browser.click_at:
+    import_path: gumi.platform.toolpack.browser_core:click_at
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Hacer clic por coordenadas (x, y) sobre la captura, para computer-use con un modelo multimodal.", inputs: [x, y] }
+  browser.press_key:
+    import_path: gumi.platform.toolpack.browser_core:press_key
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Pulsar una tecla del teclado (Enter, Tab, etc.) en la pagina.", inputs: [key] }
+  browser.type_text:
+    import_path: gumi.platform.toolpack.browser_core:type_text
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Escribir texto en el campo o elemento que tiene el foco (tras enfocarlo con click_at o click).", inputs: [text] }
+  browser.elements:
+    import_path: gumi.platform.toolpack.browser_core:elements
+    card: { category: navegador, side_effects: false, risk: low, use_when: "Listar los elementos interactivos de la pagina (botones, opciones de radio, casillas, campos, enlaces) con su indice, rol y texto, para actuar por texto en vez de por coordenadas.", inputs: [] }
+  browser.click_element:
+    import_path: gumi.platform.toolpack.browser_core:click_element
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Hacer clic en un elemento por su indice (obtenido de browser.elements): opciones de radio, casillas, botones o enlaces.", inputs: [index] }
+  browser.fill_element:
+    import_path: gumi.platform.toolpack.browser_core:fill_element
+    card: { category: navegador, side_effects: true, risk: high, use_when: "Escribir texto en un campo por su indice (obtenido de browser.elements).", inputs: [index, text] }
+  browser.close:
+    import_path: gumi.platform.toolpack.browser_core:close
+    card: { category: navegador, side_effects: true, risk: low, use_when: "Cerrar el navegador y liberar recursos al terminar.", inputs: [] }
+  medical.redact_phi:
+    import_path: gumi.platform.toolpack.medical_core:redact_phi
+    card: { category: medico, side_effects: false, risk: low, use_when: "Redactar datos personales sensibles (CURP, email, telefono) de un texto antes de compartirlo o registrarlo.", inputs: [texto] }
+  medical.normalize_units:
+    import_path: gumi.platform.toolpack.medical_core:normalize_units
+    card: { category: medico, side_effects: false, risk: low, use_when: "Convertir unidades clinicas: glucosa mg/dL<->mmol/L, temperatura C<->F, peso kg<->lb, altura cm<->in.", inputs: [valor, de, a] }
+  medical.extract_medication_names:
+    import_path: gumi.platform.toolpack.medical_core:extract_medication_names
+    card: { category: medico, side_effects: false, risk: low, use_when: "Extraer nombres de medicamentos y sus dosis de un texto clinico.", inputs: [texto] }
+  medical.source_citation:
+    import_path: gumi.platform.toolpack.medical_core:source_citation
+    card: { category: medico, side_effects: false, risk: low, use_when: "Formatear una cita de una fuente medica (guia clinica, articulo) con trazabilidad.", inputs: [titulo, fuente, autores, anio, url] }
+  medical.clinician_review_request:
+    import_path: gumi.platform.toolpack.medical_core:clinician_review_request
+    card: { category: medico, side_effects: true, risk: medium, use_when: "Registrar una solicitud de revision por un medico con licencia; marca el contenido como NO-diagnostico, pendiente de decision clinica.", inputs: [resumen, hallazgos, urgencia] }
+  medical.analyze_medical_image:
+    import_path: gumi.platform.toolpack.medical_core:analyze_medical_image
+    injected_keys: [imagen]
+    card: { category: medico, side_effects: false, risk: medium, use_when: "Analizar de forma PRELIMINAR una imagen medica (radiografia, escaneo, foto de receta o reporte de laboratorio) con el modelo MedGemma; devuelve hallazgos preliminares con disclaimer obligatorio. NUNCA es un diagnostico final.", do_not_use_when: "Se necesita un diagnostico definitivo (eso lo decide un medico con licencia).", inputs: [imagen, instruccion] }
+  rag.buscar:
+    import_path: gumi.platform.toolpack.rag_core:buscar
+    card: { category: rag, side_effects: false, risk: low, use_when: "Buscar en la base de conocimiento LOCAL ya ingerida por el cliente (RAG vectorial) los pasajes mas relevantes y devolver extractos con su documento de origen, para fundamentar y citar con material propio. NO busca en internet.", do_not_use_when: "Se necesita informacion de internet o una investigacion nueva en la web (usar web.search), o la base de conocimiento local no ha sido alimentada con documentos.", inputs: [consulta, k] }
+  rag.consultar_relaciones:
+    import_path: gumi.platform.toolpack.rag_core:consultar_relaciones
+    card: { category: rag, side_effects: false, risk: low, use_when: "Consultar en el grafo de conocimiento LOCAL las relaciones logicas (trata, contraindicaciones, dosis, interacciones, efectos adversos, etc.) de una entidad, extraidas de los documentos ya ingeridos. Mas preciso que el texto plano para la logica. NO busca en internet.", do_not_use_when: "Se necesita informacion de internet o investigacion nueva en la web (usar web.search), o no se han ingerido documentos al grafo local.", inputs: [consulta] }
