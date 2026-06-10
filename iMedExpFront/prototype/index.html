@@ -1,0 +1,518 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>imedexp · home + login + dashboards</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&family=Instrument+Serif:ital@0;1&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="tokens.css" />
+
+  <style>
+    html, body { margin: 0; padding: 0; background: #E3DCC9; font-family: 'Geist', system-ui, sans-serif; }
+    /* design-canvas viewport bg */
+    #__dc_root { min-height: 100vh; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+  <script type="text/babel" src="design-canvas.jsx"></script>
+  <script type="text/babel" src="ios-frame.jsx"></script>
+  <script type="text/babel" src="screen-home.jsx"></script>
+  <script type="text/babel" src="screen-login.jsx"></script>
+  <script type="text/babel" src="screen-auth.jsx"></script>
+  <script type="text/babel" src="screen-doctor-dashboard.jsx"></script>
+  <script type="text/babel" src="screen-doctor.jsx"></script>
+  <script type="text/babel" src="screen-patient.jsx"></script>
+  <script type="text/babel" src="screen-doctor-mobile.jsx"></script>
+  <script type="text/babel" src="screen-doctor-desktop.jsx"></script>
+  <script type="text/babel" src="screen-patient-mobile.jsx"></script>
+  <script type="text/babel" src="screen-patient-desktop.jsx"></script>
+  <script type="text/babel" src="screen-missing-mobile.jsx"></script>
+  <script type="text/babel" src="screen-admin-shell.jsx"></script>
+  <script type="text/babel" src="screen-verify-email.jsx"></script>
+  <script type="text/babel" src="screen-superadmin-desktop.jsx"></script>
+  <script type="text/babel" src="screen-director-desktop.jsx"></script>
+  <script type="text/babel" src="screen-secretary-desktop.jsx"></script>
+  <script type="text/babel" src="screen-doctor-extras-desktop.jsx"></script>
+  <script type="text/babel" src="screen-patient-extras-desktop.jsx"></script>
+  <script type="text/babel" src="screen-superadmin-2-desktop.jsx"></script>
+  <script type="text/babel" src="screen-director-2-desktop.jsx"></script>
+  <script type="text/babel" src="screen-secretary-2-desktop.jsx"></script>
+  <script type="text/babel" src="screen-doctor-extras-2-desktop.jsx"></script>
+  <script type="text/babel" src="screen-patient-extras-2-desktop.jsx"></script>
+  <script type="text/babel" src="screen-mobile-shell.jsx"></script>
+  <script type="text/babel" src="screen-verify-email-mobile.jsx"></script>
+  <script type="text/babel" src="screen-superadmin-mobile.jsx"></script>
+  <script type="text/babel" src="screen-director-mobile.jsx"></script>
+  <script type="text/babel" src="screen-secretary-mobile.jsx"></script>
+  <script type="text/babel" src="screen-doctor-extras-mobile.jsx"></script>
+  <script type="text/babel" src="screen-patient-extras-mobile.jsx"></script>
+  <script type="text/babel" src="screen-bitacora-desktop.jsx"></script>
+  <script type="text/babel" src="screen-bitacora-mobile.jsx"></script>
+  <script type="text/babel" src="screen-permissions-desktop.jsx"></script>
+
+  <script type="text/babel">
+    const { DesignCanvas, DCSection, DCArtboard } = window;
+
+    function App() {
+      return (
+        <DesignCanvas>
+          <DCSection id="marketing" title="01 · Marketing" subtitle="Home page + acceso al producto">
+            <DCArtboard id="home" label="A · Home / Landing" width={1440} height={6400}>
+              <window.HomeScreen />
+            </DCArtboard>
+            <DCArtboard id="login" label="B · Login / Acceso" width={1440} height={900}>
+              <window.LoginScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="auth" title="02 · Crear cuenta + recuperar" subtitle="Registro paciente · médico · recuperar contraseña">
+            <DCArtboard id="reg-role" label="C · Registro — tipo de cuenta" width={1440} height={900}>
+              <window.RegisterRoleScreen />
+            </DCArtboard>
+            <DCArtboard id="reg-patient" label="D · Registro — paciente" width={1440} height={900}>
+              <window.RegisterPatientScreen />
+            </DCArtboard>
+            <DCArtboard id="reg-doctor" label="E · Registro — médico" width={1440} height={900}>
+              <window.RegisterDoctorScreen />
+            </DCArtboard>
+            <DCArtboard id="recover" label="F · Recuperar contraseña" width={1440} height={900}>
+              <window.RecoverPasswordScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="producto" title="03 · Producto" subtitle="Dashboards · una vista por rol">
+            <DCArtboard id="doctor-dash" label="G · Consola — dashboard" width={1440} height={1140}>
+              <window.DoctorDashboardScreen />
+            </DCArtboard>
+            <DCArtboard id="doctor-active" label="H · Consola — consulta activa" width={1440} height={900}>
+              <window.DoctorScreen />
+            </DCArtboard>
+            <DCArtboard id="patient" label="I · App del paciente (iOS)" width={460} height={920}>
+              <window.PatientScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="medico-movil" title="04 · App del médico (móvil)" subtitle="Rediseño de las 6 pantallas — reemplazo del AI-slop oscuro">
+            <DCArtboard id="mob-profile" label="J · Perfil" width={460} height={920}>
+              <window.MobProfileScreen />
+            </DCArtboard>
+            <DCArtboard id="mob-patients" label="K · Pacientes" width={460} height={920}>
+              <window.MobPatientsScreen />
+            </DCArtboard>
+            <DCArtboard id="mob-agenda" label="L · Agenda" width={460} height={920}>
+              <window.MobAgendaScreen />
+            </DCArtboard>
+            <DCArtboard id="mob-consultas" label="M · Consultas" width={460} height={920}>
+              <window.MobConsultasScreen />
+            </DCArtboard>
+            <DCArtboard id="mob-recetas" label="N · Recetas" width={460} height={920}>
+              <window.MobRecetasScreen />
+            </DCArtboard>
+            <DCArtboard id="mob-validaciones" label="O · Validaciones" width={460} height={920}>
+              <window.MobValidacionesScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="medico-desktop" title="05 · App del médico (PC)" subtitle="Mismas pantallas en escritorio — sidebar + bento, 1440 px">
+            <DCArtboard id="dsk-patients" label="P · Pacientes" width={1440} height={1180}>
+              <window.DskPatientsScreen />
+            </DCArtboard>
+            <DCArtboard id="dsk-agenda" label="Q · Agenda (semana)" width={1440} height={1160}>
+              <window.DskAgendaScreen />
+            </DCArtboard>
+            <DCArtboard id="dsk-consultas" label="R · Consultas" width={1440} height={1160}>
+              <window.DskConsultasScreen />
+            </DCArtboard>
+            <DCArtboard id="dsk-recetas" label="S · Recetas" width={1440} height={1180}>
+              <window.DskRecetasScreen />
+            </DCArtboard>
+            <DCArtboard id="dsk-validaciones" label="T · Validaciones" width={1440} height={1140}>
+              <window.DskValidacionesScreen />
+            </DCArtboard>
+            <DCArtboard id="dsk-profile" label="U · Perfil" width={1440} height={1100}>
+              <window.DskProfileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="paciente-movil" title="06 · App del paciente (móvil)" subtitle="Rediseño completo — reemplaza inicio, historial clínico, citas, meds y perfil">
+            <DCArtboard id="pat-inicio" label="V · Inicio" width={460} height={920}>
+              <window.PInicioScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-hist" label="W · Historial · resumen" width={460} height={920}>
+              <window.PHistResumenScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-alergias" label="X · Historial · alergias" width={460} height={920}>
+              <window.PHistAlergiasScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-enf" label="Y · Historial · enfermedades" width={460} height={920}>
+              <window.PHistEnfScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-cirugias" label="Z · Historial · cirugías" width={460} height={920}>
+              <window.PHistCirugiasScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-familia" label="AA · Historial · familia" width={460} height={920}>
+              <window.PHistAntScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-vacunas" label="AB · Historial · vacunas" width={460} height={920}>
+              <window.PHistVacunasScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-peso" label="AC · Historial · peso e IMC" width={460} height={920}>
+              <window.PHistPesoScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-glucosa" label="AD · Historial · glucosa" width={460} height={920}>
+              <window.PHistGlucosaScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-citas" label="AE · Citas" width={460} height={920}>
+              <window.PCitasScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-agendar" label="AF · Agendar cita" width={460} height={920}>
+              <window.PAgendarScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-meds" label="AG · Medicamentos" width={460} height={920}>
+              <window.PMedsScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-perfil" label="AH · Perfil" width={460} height={920}>
+              <window.PPerfilScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="marketing-movil" title="08 · Marketing + auth (móvil)" subtitle="Las pantallas marketing y de cuenta en móvil — las que solo existían en PC">
+            <DCArtboard id="home-mob"        label="A′ · Home / Landing"           width={460} height={2080}>
+              <window.HomeMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="login-mob"       label="B′ · Login"                    width={460} height={920}>
+              <window.LoginMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="reg-role-mob"    label="C′ · Registro — tipo de cuenta"  width={460} height={920}>
+              <window.RegRoleMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="reg-patient-mob" label="D′ · Registro — paciente"       width={460} height={920}>
+              <window.RegPatientMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="reg-doctor-mob"  label="E′ · Registro — médico"         width={460} height={920}>
+              <window.RegDoctorMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="recover-mob"     label="F′ · Recuperar contraseña"      width={460} height={920}>
+              <window.RecoverMobileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="consola-movil" title="09 · Consola del médico (móvil)" subtitle="Dashboard y consulta activa en versión móvil">
+            <DCArtboard id="dash-mob"   label="G′ · Consola — dashboard"        width={460} height={920}>
+              <window.DashboardMobileScreen />
+            </DCArtboard>
+            <DCArtboard id="active-mob" label="H′ · Consola — consulta activa"  width={460} height={920}>
+              <window.DoctorActiveMobileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="paciente-desktop" title="07 · App del paciente (PC)" subtitle="Mismas 13 pantallas en escritorio — sidebar + bento, 1440 px">            <DCArtboard id="pd-inicio" label="AI · Inicio" width={1440} height={1080}>
+              <window.PDInicioScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-hist" label="AJ · Historial · resumen" width={1440} height={1140}>
+              <window.PDHistResumenScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-alergias" label="AK · Alergias" width={1440} height={1080}>
+              <window.PDAlergiasScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-enf" label="AL · Enf. crónicas" width={1440} height={1100}>
+              <window.PDEnfScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-cirugias" label="AM · Cirugías" width={1440} height={1000}>
+              <window.PDCirugiasScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-familia" label="AN · Familia" width={1440} height={1080}>
+              <window.PDFamiliaScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-vacunas" label="AO · Vacunas" width={1440} height={1100}>
+              <window.PDVacunasScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-peso" label="AP · Peso e IMC" width={1440} height={1080}>
+              <window.PDPesoScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-glucosa" label="AQ · Glucosa" width={1440} height={1100}>
+              <window.PDGlucosaScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-citas" label="AR · Mis citas" width={1440} height={1100}>
+              <window.PDCitasScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-agendar" label="AS · Agendar cita" width={1440} height={1080}>
+              <window.PDAgendarScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-meds" label="AT · Medicamentos" width={1440} height={1100}>
+              <window.PDMedsScreen />
+            </DCArtboard>
+            <DCArtboard id="pd-perfil" label="AU · Perfil" width={1440} height={1080}>
+              <window.PDPerfilScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="auth-extras" title="10 · Auth · faltante" subtitle="Verificar correo · cierra POST /auth/verify-email + /resend-code">
+            <DCArtboard id="verify-email" label="V · Verificar correo" width={1440} height={900}>
+              <window.VerifyEmailScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="superadmin" title="11 · Superadmin (PC) · pendiente" subtitle="Endpoints /institutions/ y /institutions/{id}/admins">
+            <DCArtboard id="sa-dash" label="AL · Inicio / tablero global" width={1440} height={1180}>
+              <window.SADashboardScreen />
+            </DCArtboard>
+            <DCArtboard id="sa-inst" label="W · Instituciones" width={1440} height={1180}>
+              <window.SAInstitutionsScreen />
+            </DCArtboard>
+            <DCArtboard id="sa-inst-detail" label="AM · Detalle de institución" width={1440} height={1200}>
+              <window.SAInstitutionDetailScreen />
+            </DCArtboard>
+            <DCArtboard id="sa-admins" label="X · Administradores" width={1440} height={1100}>
+              <window.SAAdminsScreen />
+            </DCArtboard>
+            <DCArtboard id="sa-audit" label="AN · Auditoría" width={1440} height={1200}>
+              <window.SAAuditScreen />
+            </DCArtboard>
+            <DCArtboard id="sa-profile" label="AO · Perfil del superadmin" width={1440} height={1100}>
+              <window.SAProfileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="director" title="12 · Director / institution_admin (PC) · pendiente" subtitle="Médicos, secretarias, invitaciones, asignaciones de la clínica">
+            <DCArtboard id="dir-dash" label="Y · Inicio · Director" width={1440} height={1100}>
+              <window.DirDashScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-doctors" label="Z · Médicos de la clínica" width={1440} height={1100}>
+              <window.DirDoctorsScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-doctor-detail" label="AQ · Detalle de médico" width={1440} height={1200}>
+              <window.DirDoctorDetailScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-secs" label="AA · Secretarias" width={1440} height={1080}>
+              <window.DirSecretariesScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-invites" label="AB · Invitaciones a médicos" width={1440} height={1100}>
+              <window.DirInvitesScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-assigns" label="AC · Asignaciones doctor ↔ secretaria" width={1440} height={1040}>
+              <window.DirAssignsScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-patients" label="AP · Pacientes de la clínica" width={1440} height={1180}>
+              <window.DirPatientsScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-settings" label="AR · Configuración de la clínica" width={1440} height={1200}>
+              <window.DirSettingsScreen />
+            </DCArtboard>
+            <DCArtboard id="dir-profile" label="AS · Perfil del director" width={1440} height={1080}>
+              <window.DirProfileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="secretaria" title="13 · Secretaria (PC) · pendiente" subtitle="Recepción, pacientes, agenda y vínculos de la clínica">
+            <DCArtboard id="sec-reception" label="AD · Recepción" width={1440} height={1140}>
+              <window.SecReceptionScreen />
+            </DCArtboard>
+            <DCArtboard id="sec-patients" label="AT · Pacientes" width={1440} height={1180}>
+              <window.SecPatientsScreen />
+            </DCArtboard>
+            <DCArtboard id="sec-agenda" label="AU · Agenda completa" width={1440} height={1200}>
+              <window.SecAgendaScreen />
+            </DCArtboard>
+            <DCArtboard id="sec-link" label="AE · Vincular paciente" width={1440} height={1100}>
+              <window.SecLinkScreen />
+            </DCArtboard>
+            <DCArtboard id="sec-profile" label="AV · Perfil de la secretaria" width={1440} height={1080}>
+              <window.SecProfileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="doctor-extras" title="14 · Doctor (PC) · pantallas faltantes" subtitle="Invitaciones, turnos, QR, signos vitales y expediente completo del paciente">
+            <DCArtboard id="doc-invites" label="AF · Invitaciones de clínicas" width={1440} height={1080}>
+              <window.DocInvitesScreen />
+            </DCArtboard>
+            <DCArtboard id="doc-shifts" label="AG · Turnos y horarios" width={1440} height={1140}>
+              <window.DocShiftsScreen />
+            </DCArtboard>
+            <DCArtboard id="doc-qr" label="AH · Escanear QR" width={1440} height={1080}>
+              <window.DocQRScreen />
+            </DCArtboard>
+            <DCArtboard id="doc-vitals" label="AW · Signos vitales del paciente" width={1440} height={1180}>
+              <window.DocVitalsScreen />
+            </DCArtboard>
+            <DCArtboard id="doc-full" label="AX · Expediente clínico completo" width={1440} height={1280}>
+              <window.DocPatientFullScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="patient-extras" title="15 · Paciente (PC) · pantallas faltantes" subtitle="Emergencia, ciclo, QR, signos vitales, clínicas vinculadas y avisos">
+            <DCArtboard id="pat-emergency" label="AI · Contactos de emergencia" width={1440} height={1080}>
+              <window.PatEmergencyScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-cycle" label="AJ · Ciclo menstrual" width={1440} height={1200}>
+              <window.PatCycleScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-qr" label="AK · Mi QR de acceso" width={1440} height={1100}>
+              <window.PatQRScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-vitals" label="AY · Mis signos vitales" width={1440} height={1180}>
+              <window.PatVitalsScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-clinics" label="AZ · Mis clínicas vinculadas" width={1440} height={1180}>
+              <window.PatClinicsScreen />
+            </DCArtboard>
+            <DCArtboard id="pat-notifs" label="BA · Avisos / notificaciones" width={1440} height={1160}>
+              <window.PatNotifsScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="auth-extras-mob" title="16 · Auth · móvil" subtitle="Verificar correo en móvil">
+            <DCArtboard id="verify-email-mob" label="V′ · Verificar correo (móvil)" width={460} height={920}>
+              <window.VerifyEmailMobileScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="superadmin-mob" title="17 · Superadmin · móvil" subtitle="Mismas 6 pantallas en versión móvil">
+            <DCArtboard id="sa-dash-mob"          label="W₁ · Inicio (móvil)"           width={460} height={920}>
+              <window.SADashboardMobile />
+            </DCArtboard>
+            <DCArtboard id="sa-inst-mob"          label="W₂ · Instituciones (móvil)"    width={460} height={920}>
+              <window.SAInstitutionsMobile />
+            </DCArtboard>
+            <DCArtboard id="sa-inst-det-mob"      label="W₃ · Detalle inst. (móvil)"   width={460} height={920}>
+              <window.SAInstitutionDetailMobile />
+            </DCArtboard>
+            <DCArtboard id="sa-admins-mob"        label="X₂ · Administradores (móvil)" width={460} height={920}>
+              <window.SAAdminsMobile />
+            </DCArtboard>
+            <DCArtboard id="sa-audit-mob"         label="AN₂ · Auditoría (móvil)"      width={460} height={920}>
+              <window.SAAuditMobile />
+            </DCArtboard>
+            <DCArtboard id="sa-profile-mob"       label="AO₂ · Perfil (móvil)"         width={460} height={920}>
+              <window.SAProfileMobile />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="director-mob" title="18 · Director · móvil" subtitle="9 pantallas del director en móvil">
+            <DCArtboard id="dir-dash-mob"        label="Y₂ · Inicio (móvil)"            width={460} height={920}>
+              <window.DirDashMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-doctors-mob"     label="Z₂ · Médicos (móvil)"           width={460} height={920}>
+              <window.DirDoctorsMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-doc-det-mob"     label="AQ₂ · Detalle médico (móvil)"   width={460} height={920}>
+              <window.DirDoctorDetailMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-secs-mob"        label="AA₂ · Secretarias (móvil)"      width={460} height={920}>
+              <window.DirSecretariesMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-invites-mob"     label="AB₂ · Invitaciones (móvil)"     width={460} height={920}>
+              <window.DirInvitesMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-assigns-mob"     label="AC₂ · Asignaciones (móvil)"     width={460} height={920}>
+              <window.DirAssignsMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-patients-mob"    label="AP₂ · Pacientes (móvil)"        width={460} height={920}>
+              <window.DirPatientsMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-settings-mob"    label="AR₂ · Config clínica (móvil)"  width={460} height={920}>
+              <window.DirSettingsMobile />
+            </DCArtboard>
+            <DCArtboard id="dir-profile-mob"     label="AS₂ · Perfil director (móvil)" width={460} height={920}>
+              <window.DirProfileMobile />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="secretaria-mob" title="19 · Secretaria · móvil" subtitle="5 pantallas en versión móvil">
+            <DCArtboard id="sec-reception-mob"   label="AD₂ · Recepción (móvil)"        width={460} height={920}>
+              <window.SecReceptionMobile />
+            </DCArtboard>
+            <DCArtboard id="sec-patients-mob"    label="AT₂ · Pacientes (móvil)"        width={460} height={920}>
+              <window.SecPatientsMobile />
+            </DCArtboard>
+            <DCArtboard id="sec-agenda-mob"      label="AU₂ · Agenda (móvil)"           width={460} height={920}>
+              <window.SecAgendaMobile />
+            </DCArtboard>
+            <DCArtboard id="sec-link-mob"        label="AE₂ · Vincular paciente (móvil)" width={460} height={920}>
+              <window.SecLinkMobile />
+            </DCArtboard>
+            <DCArtboard id="sec-profile-mob"     label="AV₂ · Perfil secretaria (móvil)" width={460} height={920}>
+              <window.SecProfileMobile />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="doctor-extras-mob" title="20 · Doctor extras · móvil" subtitle="Invitaciones, turnos, QR, vitales, expediente">
+            <DCArtboard id="doc-invites-mob"   label="AF₂ · Invitaciones (móvil)"     width={460} height={920}>
+              <window.DocInvitesMobile />
+            </DCArtboard>
+            <DCArtboard id="doc-shifts-mob"    label="AG₂ · Turnos (móvil)"           width={460} height={920}>
+              <window.DocShiftsMobile />
+            </DCArtboard>
+            <DCArtboard id="doc-qr-mob"        label="AH₂ · Escanear QR (móvil)"     width={460} height={920}>
+              <window.DocQRMobile />
+            </DCArtboard>
+            <DCArtboard id="doc-vitals-mob"    label="AW₂ · Vitales paciente (móvil)" width={460} height={920}>
+              <window.DocVitalsMobile />
+            </DCArtboard>
+            <DCArtboard id="doc-full-mob"      label="AX₂ · Expediente completo (móvil)" width={460} height={920}>
+              <window.DocPatientFullMobile />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="patient-extras-mob" title="21 · Paciente extras · móvil" subtitle="Emergencia, ciclo, QR, signos vitales, mis clínicas, avisos">
+            <DCArtboard id="pat-emergency-mob" label="AI₂ · Emergencia (móvil)"        width={460} height={920}>
+              <window.PatEmergencyMobile />
+            </DCArtboard>
+            <DCArtboard id="pat-cycle-mob"     label="AJ₂ · Ciclo menstrual (móvil)"  width={460} height={920}>
+              <window.PatCycleMobile />
+            </DCArtboard>
+            <DCArtboard id="pat-qr-mob"        label="AK₂ · Mi QR (móvil)"            width={460} height={920}>
+              <window.PatQRMobile />
+            </DCArtboard>
+            <DCArtboard id="pat-vitals-mob"    label="AY₂ · Mis signos vitales (móvil)" width={460} height={920}>
+              <window.PatVitalsMobile />
+            </DCArtboard>
+            <DCArtboard id="pat-clinics-mob"   label="AZ₂ · Mis clínicas (móvil)"     width={460} height={920}>
+              <window.PatClinicsMobile />
+            </DCArtboard>
+            <DCArtboard id="pat-notifs-mob"    label="BA₂ · Avisos (móvil)"           width={460} height={920}>
+              <window.PatNotifsMobile />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="bitacora" title="22 · Bitácora del personal · acceso restringido" subtitle="Practicantes, docentes, residentes y personal de apoyo · form dinámico + tabla imprimible">
+            <DCArtboard id="bitacora-pc" label="BB · Bitácora · PC" width={1440} height={1280}>
+              <window.DocBitacoraScreen />
+            </DCArtboard>
+            <DCArtboard id="bitacora-mob" label="BB₂ · Bitácora · móvil" width={460} height={920}>
+              <window.DocBitacoraMobile />
+            </DCArtboard>
+            <DCArtboard id="bitacora-print" label="BC · Vista imprimible · A4" width={1440} height={1900}>
+              <window.DocBitacoraPrintScreen />
+            </DCArtboard>
+          </DCSection>
+
+          <DCSection id="permisos" title="23 · Pantallas y permisos por rol · Superadmin" subtitle="Matriz rol × pantalla · controla qué ve cada quien desde la BD">
+            <DCArtboard id="permisos-pc" label="BD · Matriz de permisos · PC" width={1440} height={1320}>
+              <window.SAPermissionsScreen />
+            </DCArtboard>
+            <DCArtboard id="permisos-mob" label="BD₂ · Permisos por rol · móvil" width={460} height={920}>
+              <window.SAPermissionsMobile />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

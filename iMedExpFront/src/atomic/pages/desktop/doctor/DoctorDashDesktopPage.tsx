@@ -10,6 +10,8 @@ import { DesktopShell } from "@/atomic/templates/DesktopShell";
 import { doctorNav } from "@/navigation/desktopNavConfigs";
 import { goToScreen } from "@/navigation/screenRouter";
 import { Appointment, fetchAppointments } from "@/services/api/appointmentsApi";
+import { setSelectedPatientId } from "@/services/api/selectedPatient";
+import { setSelectedAppointmentId } from "@/services/api/selectedAppointment";
 import { getCurrentDoctorId } from "@/services/api/currentDoctor";
 import { fetchDoctor } from "@/services/api/doctorsApi";
 import { fetchPatient, fetchPatientsList } from "@/services/api/patientsApi";
@@ -182,7 +184,7 @@ function StatsTicker({ patients, today, done, total }: { patients: number; today
   );
 }
 
-function NextPatientHero({ appt, patientName }: { appt: Appointment | null; patientName: string | null }) {
+function NextPatientHero({ appt, patientName, onStartConsultation }: { appt: Appointment | null; patientName: string | null; onStartConsultation?: (patientId: number, appointmentId: number) => void }) {
   if (!appt) {
     return (
       <View style={styles.hero}>
@@ -227,7 +229,9 @@ function NextPatientHero({ appt, patientName }: { appt: Appointment | null; pati
         <View style={styles.heroActions}>
           <Tappable
             scaleTo={0.97}
-            onPress={() => goToScreen("doctor-active")}
+            onPress={() => {
+              if (appt) onStartConsultation?.(appt.patient_id, appt.id);
+            }}
             style={styles.heroPrimaryBtn}
           >
             <Text style={styles.heroPrimaryBtnText}>Empezar consulta</Text>
@@ -510,7 +514,15 @@ export function DoctorDashDesktopPage() {
             />
           </FadeIn>
           <FadeIn delay={120}>
-            <NextPatientHero appt={state.nextAppointment} patientName={state.nextPatientName} />
+            <NextPatientHero
+              appt={state.nextAppointment}
+              patientName={state.nextPatientName}
+              onStartConsultation={async (patientId, appointmentId) => {
+                await setSelectedPatientId(patientId);
+                await setSelectedAppointmentId(appointmentId);
+                goToScreen("doctor-active");
+              }}
+            />
           </FadeIn>
           <FadeIn delay={180}>
             <AccesoRapido />
@@ -554,7 +566,11 @@ export function DoctorDashDesktopPage() {
             setQuickModal(false);
             goToScreen("doctor-dash");
           }}
-          onStartConsultation={() => goToScreen("doctor-active")}
+          onStartConsultation={async (patientId, appointmentId) => {
+            await setSelectedPatientId(patientId);
+            await setSelectedAppointmentId(appointmentId);
+            goToScreen("doctor-active");
+          }}
           onViewAgenda={() => goToScreen("dsk-agenda")}
         />
       ) : null}

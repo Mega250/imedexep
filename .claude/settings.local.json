@@ -72,7 +72,8 @@
       "Bash(curl -s -o /dev/null http://localhost:8000/health)",
       "Bash(python3 -c \"import sys,json; print\\('access_attributes:', json.load\\(sys.stdin\\).get\\('access_attributes'\\)\\)\")",
       "Bash(docker rm *)",
-      "Bash(docker inspect *)"
+      "Bash(docker inspect *)",
+      "Bash(git -C /home/mariano/ime/imedexep log --oneline -10)"
     ]
   }
 }

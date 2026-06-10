@@ -17,7 +17,7 @@ type QuickAppointmentModalProps = {
   role: "doctor" | "secretary";
   onClose: () => void;
   onCreated: () => void;
-  onStartConsultation?: () => void;
+  onStartConsultation?: (patientId: number, appointmentId: number) => void;
   onViewAgenda?: () => void;
 };
 
@@ -59,6 +59,8 @@ export function QuickAppointmentModal({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdName, setCreatedName] = useState("");
+  const [createdPatientId, setCreatedPatientId] = useState<number | null>(null);
+  const [createdAppointmentId, setCreatedAppointmentId] = useState<number | null>(null);
 
   function reset() {
     setStep("curp");
@@ -71,6 +73,8 @@ export function QuickAppointmentModal({
     setSubmitting(false);
     setError(null);
     setCreatedName("");
+    setCreatedPatientId(null);
+    setCreatedAppointmentId(null);
   }
 
   function handleClose() {
@@ -109,7 +113,7 @@ export function QuickAppointmentModal({
     setSubmitting(true);
     setError(null);
     try {
-      await postAppointment({
+      const appt = await postAppointment({
         patient_id: found.id,
         doctor_id: doctorId,
         institution_id: institutionId,
@@ -118,6 +122,8 @@ export function QuickAppointmentModal({
       });
       const name = `${found.first_name} ${found.last_name}`.trim();
       setCreatedName(name);
+      setCreatedPatientId(found.id);
+      setCreatedAppointmentId(appt.id);
       if (role === "secretary") {
         reset();
         onCreated();
@@ -150,7 +156,7 @@ export function QuickAppointmentModal({
         last_name: lastName.trim(),
         date_of_birth: dobIso
       });
-      await postAppointment({
+      const appt = await postAppointment({
         patient_id: patient.id,
         doctor_id: doctorId,
         institution_id: institutionId,
@@ -159,6 +165,8 @@ export function QuickAppointmentModal({
       });
       const name = `${firstName.trim()} ${lastName.trim()}`;
       setCreatedName(name);
+      setCreatedPatientId(patient.id);
+      setCreatedAppointmentId(appt.id);
       if (role === "secretary") {
         reset();
         onCreated();
@@ -349,9 +357,11 @@ export function QuickAppointmentModal({
                   height={46}
                   iconRight="arrow"
                   onPress={() => {
+                    const pId = createdPatientId;
+                    const aId = createdAppointmentId;
                     reset();
                     onClose();
-                    onStartConsultation?.();
+                    if (pId && aId) onStartConsultation?.(pId, aId);
                   }}
                   style={styles.doneBtn}
                 />

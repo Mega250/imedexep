@@ -156,7 +156,10 @@ function AgendaAside({ agenda, totalToday, doneToday }: { agenda: AgendaItem[]; 
             <Tappable
               key={item.id}
               scaleTo={0.98}
-              onPress={() => goToScreen("doctor-active")}
+              onPress={async () => {
+                await setSelectedPatientId(item.patient_id);
+                goToScreen("doctor-active");
+              }}
               style={[
                 styles.agendaItem,
                 now && styles.agendaItemNow,

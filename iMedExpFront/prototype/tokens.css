@@ -1,0 +1,159 @@
+/* imedexp · design tokens · v2 (ocean blue + bento) */
+:root {
+  /* paper / surface — light cyan tints */
+  --paper:    #F1FAFE;
+  --paper-2:  #E0F4FA;
+  --paper-3:  #CAF0F8;
+  --paper-4:  #ADE8F4;
+  --white:    #FFFFFF;
+
+  /* "ink" semantics now mapped to ocean palette */
+  --ink:      #03045E;   /* deepest navy — primary text / bg dark panels */
+  --ink-2:    #023E8A;   /* secondary text */
+  --ink-3:    #0077B6;   /* tertiary text / labels */
+  --ink-4:    #48CAE4;   /* quaternary / soft */
+  --ink-5:    #90E0EF;
+
+  /* rules */
+  --rule:     #BFE2EF;
+  --rule-2:   #DDF0F6;
+  --rule-3:   #ECF7FB;
+
+  /* accent — the bright mid blue used as primary action */
+  --accent:        #0096C7;
+  --accent-deep:   #023E8A;
+  --accent-ink:    #03045E;
+  --accent-soft:   #CAF0F8;
+  --accent-rule:   #90E0EF;
+  --accent-bright: #00B4D8;
+
+  /* alert — kept warm red so it remains semantically distinct from blue palette */
+  --alert:         #B83232;
+  --alert-soft:    #FBE9E8;
+  --alert-rule:    #F1C3C0;
+
+  /* ok / mid */
+  --ok:            #1C8C5A;
+  --mid:           #C97A12;
+
+  /* type */
+  --sans:  'Geist', 'Söhne', 'Helvetica Neue', Helvetica, Arial, system-ui, sans-serif;
+  --mono:  'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --serif: 'Instrument Serif', 'Times New Roman', Times, serif;
+
+  /* bento radii */
+  --r-sm:  8px;
+  --r-md:  12px;
+  --r-lg:  16px;
+  --r-xl:  22px;
+  --r-2xl: 28px;
+}
+
+/* base reset within artboards */
+.imx { box-sizing: border-box; font-family: var(--sans); color: var(--ink); -webkit-font-smoothing: antialiased; text-rendering: geometricPrecision; }
+.imx *, .imx *::before, .imx *::after { box-sizing: border-box; }
+.imx h1, .imx h2, .imx h3, .imx h4, .imx p { margin: 0; }
+.imx button { font-family: inherit; cursor: pointer; border: 0; background: transparent; padding: 0; color: inherit; }
+.imx ul, .imx ol { margin: 0; padding: 0; list-style: none; }
+.imx a { color: inherit; text-decoration: none; }
+
+/* utility */
+.mono { font-family: var(--mono); font-feature-settings: "ss01", "tnum"; letter-spacing: -0.01em; }
+.serif { font-family: var(--serif); font-style: italic; letter-spacing: -0.01em; }
+.eyebrow { font-family: var(--mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.rule-x { height: 1px; background: var(--rule); width: 100%; }
+
+/* logo: source SVG is pure black, recoloured via mask */
+.logo-mask {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask: var(--logo-src) no-repeat center / contain;
+          mask: var(--logo-src) no-repeat center / contain;
+}
+
+/* chips */
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em;
+  padding: 4px 9px 5px; border: 1px solid var(--rule); border-radius: 999px;
+  text-transform: uppercase; color: var(--ink-2); background: var(--white);
+}
+.chip.alert { color: var(--alert); border-color: var(--alert-rule); background: var(--alert-soft); }
+.chip.accent { color: var(--accent-deep); border-color: var(--accent-rule); background: var(--accent-soft); }
+.chip.dark { color: var(--paper); border-color: rgba(255,255,255,0.22); background: rgba(255,255,255,0.05); }
+
+/* button — pill, bento-rounded */
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  height: 44px; padding: 0 20px; border-radius: 12px;
+  font-family: var(--sans); font-size: 14px; font-weight: 500; letter-spacing: -0.005em;
+  border: 1px solid var(--ink); background: var(--ink); color: #fff;
+  transition: transform .12s ease, background .12s ease, color .12s ease, box-shadow .12s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn.ghost { background: transparent; color: var(--ink); border-color: var(--rule); }
+.btn.ghost:hover { background: var(--paper-3); }
+.btn.accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.sm  { height: 32px; font-size: 12px; padding: 0 12px; border-radius: 9px; }
+.btn.lg  { height: 52px; font-size: 15px; padding: 0 22px; border-radius: 14px; }
+.btn.block { width: 100%; justify-content: center; }
+.btn.invert { background: #fff; color: var(--ink); border-color: #fff; }
+.btn.invert:hover { background: var(--paper-3); }
+.btn.dark-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.25); }
+.btn.dark-ghost:hover { background: rgba(255,255,255,0.08); }
+
+/* spec strip → bento mini-cards */
+.spec-cell {
+  display: flex; flex-direction: column; gap: 4px;
+  padding: 14px 16px;
+}
+.spec-cell .k { font-family: var(--mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); }
+.spec-cell .v { font-size: 15px; color: var(--ink); }
+
+/* ─── animations ─── */
+@keyframes imxFadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes imxFadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes imxPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0,180,216,0.45); }
+  50%      { box-shadow: 0 0 0 10px rgba(0,180,216,0); }
+}
+@keyframes imxMarquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes imxRotate {
+  0%, 22%  { opacity: 1; transform: translateY(0); }
+  28%, 95% { opacity: 0; transform: translateY(-18px); }
+  100%     { opacity: 1; transform: translateY(0); }
+}
+@keyframes imxBlink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes imxArrow {
+  0% { transform: translateX(0); opacity: 0; }
+  20% { opacity: 1; }
+  80% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+
+.fadeup { opacity: 0; animation: imxFadeUp .8s cubic-bezier(.2,.7,.2,1) forwards; }
+.fadein { opacity: 0; animation: imxFadeIn .8s ease forwards; }
+.in-view { animation-play-state: running; }
+/* before-view auto-animates on its own, with a small initial delay so the hero
+   has a moment to settle. If a parent uses an IntersectionObserver to add
+   .is-visible sooner, that's fine too. */
+.before-view { opacity: 0; transform: translateY(20px); animation: imxFadeUp .9s .6s cubic-bezier(.2,.7,.2,1) forwards; }
+.is-visible  { opacity: 1; transform: translateY(0); }
+.pulse { animation: imxPulse 2.4s ease-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .fadeup, .fadein, .before-view { animation: none; opacity: 1; transform: none; }
+  .pulse { animation: none; }
+}
+

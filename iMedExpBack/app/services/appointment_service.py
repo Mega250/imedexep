@@ -61,6 +61,25 @@ class AppointmentService:
                 "El paciente no está vinculado a la institución del médico"
             )
 
+    async def _ensure_or_create_patient_link(
+        self, patient_id: int, institution_id: int
+    ) -> None:
+        result = await self.session.execute(
+            select(PatientInstitution.id).where(
+                PatientInstitution.patient_id == patient_id,
+                PatientInstitution.institution_id == institution_id,
+                PatientInstitution.unlinked_at.is_(None),
+            )
+        )
+        if result.scalar_one_or_none() is None:
+            self.session.add(
+                PatientInstitution(
+                    patient_id=patient_id,
+                    institution_id=institution_id,
+                )
+            )
+            await self.session.flush()
+
     async def create_appointment(
         self, data: AppointmentCreate, caller: TokenPayload
     ) -> AppointmentResponse:
@@ -75,7 +94,7 @@ class AppointmentService:
                 )
             patient_id = own_patient_id
 
-        patient = await self.patient_repo.get_by_id(patient_id)
+        patient = await self.patient_repo.get_by_id_unrestricted(patient_id)
         if not patient or patient.deleted_at:
             raise NotFoundError("Paciente no encontrado")
 
@@ -95,13 +114,9 @@ class AppointmentService:
         if caller.role == UserRole.patient.value:
             await self._ensure_patient_link(patient_id, institution_id)
         elif caller.role != UserRole.superadmin.value:
-            if (
-                caller.institution_id is None
-                or caller.institution_id != institution_id
-            ):
-                raise ForbiddenError(
-                    "No puedes crear citas para otra institución"
-                )
+            await self._ensure_or_create_patient_link(
+                patient_id, institution_id
+            )
 
         taken = await self.repo.is_slot_taken(
             data.doctor_id, data.scheduled_at

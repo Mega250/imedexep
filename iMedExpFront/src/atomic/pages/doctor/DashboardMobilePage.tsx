@@ -15,13 +15,13 @@ import { DoctorTabBar } from "@/atomic/organisms/DoctorTabBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen } from "@/navigation/screenRouter";
 import { Appointment, fetchAppointments } from "@/services/api/appointmentsApi";
+import { setSelectedPatientId } from "@/services/api/selectedPatient";
+import { setSelectedAppointmentId } from "@/services/api/selectedAppointment";
 import { fetchPatientsList, Patient } from "@/services/api/patientsApi";
 import { fetchConsultations } from "@/services/api/consultationsApi";
 import { Doctor, fetchDoctor } from "@/services/api/doctorsApi";
 import { getCurrentDoctorId } from "@/services/api/currentDoctor";
 import { silentOrNull } from "@/services/api/silent";
-import { setSelectedPatientId } from "@/services/api/selectedPatient";
-import { setSelectedAppointmentId } from "@/services/api/selectedAppointment";
 import { colors, radii } from "@/theme/tokens";
 import { family, text } from "@/theme/typography";
 import { formatApptTime } from "@/utils/dates";
@@ -348,7 +348,11 @@ export function DashboardMobilePage() {
             setQuickModal(false);
             goToScreen("dash-mob");
           }}
-          onStartConsultation={() => goToScreen("active-mob")}
+          onStartConsultation={async (patientId, appointmentId) => {
+            await setSelectedPatientId(patientId);
+            await setSelectedAppointmentId(appointmentId);
+            goToScreen("active-mob");
+          }}
           onViewAgenda={() => goToScreen("mob-agenda")}
         />
       ) : null}

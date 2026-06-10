@@ -71,6 +71,15 @@ class PatientRepository(BaseRepository[Patient]):
         )
         return result.scalar_one_or_none()
 
+    async def get_by_id_unrestricted(self, patient_id: int) -> Patient | None:
+        result = await self.session.execute(
+            select(Patient).from_statement(
+                text("SELECT * FROM fn_get_patient_by_id(:p_id)")
+            ),
+            {"p_id": patient_id},
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_curp_hash(self, curp: str) -> Patient | None:
         enc = get_encryptor()
         curp_hash = enc.hash_curp(curp)

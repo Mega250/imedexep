@@ -51,6 +51,7 @@ automaticamente**. Para ejecutarlas manualmente:
 ```bash
 sudo docker exec -i med_postgres psql -U postgres -d med_records < iMedExpBack/sql/123PendingRegistration.sql
 sudo docker exec -i med_postgres psql -U postgres -d med_records < iMedExpBack/sql/124PatientStaffInsert.sql
+sudo docker exec -i med_postgres psql -U postgres -d med_records < iMedExpBack/sql/125GetPatientById.sql
 ```
 Si prefieres recrear la base de datos desde cero (pierdes datos):
 ```bash
