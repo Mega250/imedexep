@@ -5,8 +5,10 @@ import { router, Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ScreenFallback } from "@/atomic/molecules/ScreenFallback";
+import { TourOverlay } from "@/atomic/onboarding/TourOverlay";
 import { DESKTOP_BREAKPOINT } from "@/navigation/desktopVariants";
 import { AccessibilityProvider } from "@/state/accessibility";
+import { OnboardingProvider } from "@/state/onboarding";
 import { PatientProvider } from "@/state/patientContext";
 import { hydrateSession, useSessionWatcher } from "@/state/sessionStore";
 import { appFonts } from "@/theme/fonts";
@@ -105,14 +107,26 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <AccessibilityProvider>
         <PatientProvider>
-          <StatusBar style="dark" />
-          <WebFrame>
-            {fontsLoaded ? (
-              <Stack screenOptions={{ headerShown: false, animation: "slide_from_right" }} />
-            ) : (
-              <ScreenFallback label="Cargando iMedExp…" />
-            )}
-          </WebFrame>
+          <OnboardingProvider>
+            <StatusBar style="dark" />
+            <WebFrame>
+              {fontsLoaded ? (
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    // Web: sin slide -> evita la capa de transición que captura el
+                    // primer tap y obligaba a hacer doble clic para navegar/regresar.
+                    // Nativo: conserva la animación nativa (no presenta el problema).
+                    animation: Platform.OS === "web" ? "none" : "slide_from_right",
+                  }}
+                />
+              ) : (
+                <ScreenFallback label="Cargando iMedExp…" />
+              )}
+            </WebFrame>
+            {/* Tour de bienvenida: overlay global, se activa solo en primer login. */}
+            <TourOverlay />
+          </OnboardingProvider>
         </PatientProvider>
       </AccessibilityProvider>
     </SafeAreaProvider>

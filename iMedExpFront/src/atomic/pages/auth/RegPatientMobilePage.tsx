@@ -59,6 +59,14 @@ function liveError(value: string, validator: (v: string) => string | null): stri
   return value.trim() ? validator(value) : null;
 }
 
+const STEP_TITLES = [
+  "Datos personales.",
+  "Dirección · opcional.",
+  "Historia inicial.",
+  "Correo y contraseña.",
+  "Revisa y confirma."
+];
+
 export function RegPatientMobilePage() {
   const [step, setStep] = useState<PatientRegistrationStep>(0);
   const [form, setForm] = useState<PatientRegisterForm>(emptyPatientForm);
@@ -113,9 +121,7 @@ export function RegPatientMobilePage() {
         validateName(form.apellidos.trim(), "Apellidos") ??
         (dob ? validateDob(dob) : "Fecha de nacimiento inválida. Usa dd/mm/aaaa.") ??
         (!form.gender ? "Selecciona el sexo del paciente." : null) ??
-        validateCurp(form.curp.trim().toUpperCase()) ??
-        validateEmail(form.email.trim().toLowerCase()) ??
-        validatePassword(form.pwd)
+        validateCurp(form.curp.trim().toUpperCase())
       );
     }
     if (targetStep === 1) {
@@ -125,13 +131,19 @@ export function RegPatientMobilePage() {
         null
       );
     }
+    if (targetStep === 3) {
+      return (
+        validateEmail(form.email.trim().toLowerCase()) ??
+        validatePassword(form.pwd)
+      );
+    }
     return null;
   }
 
   async function handleNext() {
     const validationError = validateCurrentStep();
     if (validationError) {
-      const inlineErrors = [nombreError, apellidosError, fechaError, curpError, emailError, phoneError, postalCodeError];
+      const inlineErrors = [nombreError, apellidosError, fechaError, curpError, emailError, passwordError, phoneError, postalCodeError];
       setError(inlineErrors.includes(validationError) ? null : validationError);
       return;
     }
@@ -150,7 +162,7 @@ export function RegPatientMobilePage() {
       }
     }
     setError(null);
-    setStep((curr) => Math.min(curr + 1, 2) as PatientRegistrationStep);
+    setStep((curr) => Math.min(curr + 1, 4) as PatientRegistrationStep);
   }
 
   function handlePrev() {
@@ -161,11 +173,12 @@ export function RegPatientMobilePage() {
   async function handleSubmit() {
     if (busy) return;
     setError(null);
-    const firstError = validateCurrentStep(0) ?? validateCurrentStep(1);
-    if (firstError) {
-      setError(firstError);
-      return;
-    }
+    const step0Error = validateCurrentStep(0);
+    if (step0Error) { setError(step0Error); setStep(0); return; }
+    const step3Error = validateCurrentStep(3);
+    if (step3Error) { setError(step3Error); setStep(3); return; }
+    const step1Error = validateCurrentStep(1);
+    if (step1Error) { setError(step1Error); setStep(1); return; }
     const dob = toIsoDate(form.fecha);
     if (!dob) {
       setError("Fecha de nacimiento inválida. Usa dd/mm/aaaa.");
@@ -224,18 +237,24 @@ export function RegPatientMobilePage() {
     <MobileScreen keyboardAware contentStyle={styles.content}>
       <AuthHeader back="← Tipo de cuenta" onBack={() => goBack("reg-role-mob")} />
       <View style={styles.body}>
+        <Text style={styles.loginHint}>
+          ¿Ya tienes cuenta?{" "}
+          <Text style={styles.loginLink} onPress={() => goToScreen("login-mob")}>Iniciar sesión</Text>
+        </Text>
         <FadeIn>
-          <Stepper steps={PATIENT_STEPS} current={step} />
-          <Text style={styles.title}>
-            {step === 0 ? "Datos personales." : step === 1 ? "Dirección · opcional." : "Historia inicial."}
-          </Text>
+          <Stepper
+            steps={PATIENT_STEPS}
+            current={step}
+            onStepPress={(i) => {
+              // Navegación libre entre pestañas (aunque el paso actual no esté lleno).
+              setError(null);
+              setStep(i as PatientRegistrationStep);
+            }}
+          />
           <Text style={styles.lead}>
-            {step === 0
-              ? "Estos datos se reanudan si sales antes de terminar."
-              : step === 1
-              ? "Todos los campos son opcionales. Puedes completarlos después desde tu perfil."
-              : "Contesta lo que aplique. Podrás completarlo después."}
+            Estos datos aparecerán en tu expediente y se reanudan si sales antes de terminar.
           </Text>
+          <Text style={styles.title}>{STEP_TITLES[step]}</Text>
         </FadeIn>
 
         <FadeIn delay={90} style={styles.form}>
@@ -257,6 +276,24 @@ export function RegPatientMobilePage() {
                   ))}
                 </View>
               </View>
+            </>
+          ) : step === 1 ? (
+            <>
+              <FormField label="Calle y número" placeholder="Av. Universidad 123" value={form.street} onChangeText={set("street")} />
+              <View style={styles.row}>
+                <FormField label="Colonia" placeholder="Centro" value={form.neighborhood} onChangeText={set("neighborhood")} style={styles.col} />
+                <FormField label="CP" placeholder="00000" keyboardType="number-pad" value={form.postalCode} onChangeText={(v) => set("postalCode")(v.replace(/\D/g, "").slice(0, 5))} style={styles.col} valid={!!form.postalCode.trim() && !postalCodeError} errorText={postalCodeError} />
+              </View>
+              <View style={styles.row}>
+                <FormField label="Ciudad" placeholder="Puebla" value={form.city} onChangeText={set("city")} style={styles.col} />
+                <FormField label="Estado" placeholder="Puebla" value={form.state} onChangeText={set("state")} style={styles.col} />
+              </View>
+              <FormField label="Teléfono" placeholder="10 dígitos" icon="phone" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => set("phone")(v.replace(/\D/g, "").slice(0, 10))} valid={!!form.phone.trim() && !phoneError} errorText={phoneError} />
+            </>
+          ) : step === 2 ? (
+            <PatientHistoryStep form={form} setForm={setForm} />
+          ) : step === 3 ? (
+            <>
               <FormField label="Correo" placeholder="tu@correo.com" icon="mail" keyboardType="email-address" autoCapitalize="none" value={form.email} onChangeText={set("email")} valid={!!form.email.trim() && !emailError} errorText={emailError} />
               <FormField
                 label="Contraseña"
@@ -274,21 +311,26 @@ export function RegPatientMobilePage() {
               />
               <PasswordChecklist value={form.pwd} />
             </>
-          ) : step === 1 ? (
-            <>
-              <FormField label="Calle y número" placeholder="Av. Universidad 123" value={form.street} onChangeText={set("street")} />
-              <View style={styles.row}>
-                <FormField label="Colonia" placeholder="Centro" value={form.neighborhood} onChangeText={set("neighborhood")} style={styles.col} />
-                <FormField label="CP" placeholder="00000" keyboardType="number-pad" value={form.postalCode} onChangeText={(v) => set("postalCode")(v.replace(/\D/g, "").slice(0, 5))} style={styles.col} valid={!!form.postalCode.trim() && !postalCodeError} errorText={postalCodeError} />
-              </View>
-              <View style={styles.row}>
-                <FormField label="Ciudad" placeholder="Puebla" value={form.city} onChangeText={set("city")} style={styles.col} />
-                <FormField label="Estado" placeholder="Puebla" value={form.state} onChangeText={set("state")} style={styles.col} />
-              </View>
-              <FormField label="Teléfono" placeholder="10 dígitos" icon="phone" keyboardType="phone-pad" value={form.phone} onChangeText={(v) => set("phone")(v.replace(/\D/g, "").slice(0, 10))} valid={!!form.phone.trim() && !phoneError} errorText={phoneError} />
-            </>
           ) : (
-            <PatientHistoryStep form={form} setForm={setForm} />
+            <View style={styles.summary}>
+              {([
+                ["Nombre", `${form.nombre} ${form.apellidos}`.trim() || "—"],
+                ["Nacimiento", form.fecha || "—"],
+                ["Sexo", form.gender ? GENDER_OPTIONS.find((o) => o.value === form.gender)?.label ?? form.gender : "—"],
+                ["CURP", form.curp || "—"],
+                ["Correo", form.email || "—"],
+                ["Teléfono", form.phone || "—"],
+                ["Ciudad", [form.city, form.state].filter(Boolean).join(", ") || "—"]
+              ] as [string, string][]).map(([k, v]) => (
+                <View key={k} style={styles.sumRow}>
+                  <Text style={styles.sumKey}>{k}</Text>
+                  <Text style={styles.sumVal} numberOfLines={1}>{v}</Text>
+                </View>
+              ))}
+              <Text style={styles.sumNote}>
+                Revisa que todo esté correcto. Al crear la cuenta te enviaremos un código para verificar tu correo.
+              </Text>
+            </View>
           )}
         </FadeIn>
 
@@ -296,7 +338,7 @@ export function RegPatientMobilePage() {
           {error ? <Text style={styles.error}>{error}</Text> : null}
           <View style={styles.actions}>
             {step > 0 ? <Button label="Atrás" variant="ghost" height={44} block={false} style={styles.backAction} disabled={busy} onPress={handlePrev} /> : null}
-            <Button label={busy ? "Procesando..." : step < 2 ? "Continuar" : "Crear cuenta"} onPress={step < 2 ? handleNext : handleSubmit} disabled={busy || !draftReady} style={styles.submit} />
+            <Button label={busy ? "Procesando..." : step < 4 ? "Continuar" : "Crear cuenta"} onPress={step < 4 ? handleNext : handleSubmit} disabled={busy || !draftReady} style={styles.submit} />
           </View>
           <Text style={styles.terms}>
             Al continuar aceptas los <Text style={styles.link}>términos</Text> y la{" "}
@@ -315,6 +357,54 @@ const styles = StyleSheet.create({
   body: {
     paddingHorizontal: 22,
     paddingTop: 4
+  },
+  loginHint: {
+    fontFamily: family.regular,
+    fontSize: 12.5,
+    color: colors.ink3,
+    textAlign: "right",
+    marginBottom: 8
+  },
+  loginLink: {
+    fontFamily: family.medium,
+    color: colors.ink
+  },
+  summary: {
+    gap: 2,
+    backgroundColor: colors.paper3,
+    borderWidth: 1,
+    borderColor: colors.rule,
+    borderRadius: 14,
+    padding: 14
+  },
+  sumRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 7,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.rule
+  },
+  sumKey: {
+    width: 92,
+    fontFamily: family.mono,
+    fontSize: 10,
+    letterSpacing: 0.6,
+    textTransform: "uppercase",
+    color: colors.ink3
+  },
+  sumVal: {
+    flex: 1,
+    fontFamily: family.regular,
+    fontSize: 13,
+    color: colors.ink
+  },
+  sumNote: {
+    fontFamily: family.regular,
+    fontSize: 11.5,
+    lineHeight: 17,
+    color: colors.ink3,
+    marginTop: 10
   },
   title: {
     fontFamily: family.medium,

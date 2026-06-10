@@ -78,7 +78,8 @@ export function HomeMobilePage() {
         <Tappable
           style={styles.iconBtn}
           scaleTo={0.92}
-          onPress={() => goToScreen("login-mob")}
+          accessibilityLabel="Crear cuenta"
+          onPress={() => goToScreen("reg-role-mob")}
         >
           <Icon kind="user" size={16} color={colors.ink2} />
         </Tappable>
@@ -112,12 +113,12 @@ export function HomeMobilePage() {
             </Text>
             <View style={styles.heroButtons}>
               <Button
-                label="Soy paciente · empezar gratis  →"
+                label="Soy paciente · iniciar sesión  →"
                 variant="accent"
-                onPress={() => goToScreen("reg-role-mob")}
+                onPress={() => goToScreen("login-mob")}
               />
               <Button
-                label="Soy médico · acceder"
+                label="Soy médico · iniciar sesión  →"
                 variant="ghost"
                 height={48}
                 onPress={() => goToScreen("login-mob")}

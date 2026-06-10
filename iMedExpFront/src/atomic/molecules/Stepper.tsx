@@ -3,13 +3,16 @@ import { StyleSheet, Text, View } from "react-native";
 import { colors } from "@/theme/tokens";
 import { family } from "@/theme/typography";
 import { Icon } from "@/atomic/atoms/Icon";
+import { Tappable } from "@/atomic/atoms/Tappable";
 
 type StepperProps = {
   steps: string[];
   current: number;
+  /** Si se provee, cada paso es clicable y permite navegar libremente entre pasos. */
+  onStepPress?: (index: number) => void;
 };
 
-export function Stepper({ steps, current }: StepperProps) {
+export function Stepper({ steps, current, onStepPress }: StepperProps) {
   return (
     <View style={styles.wrap}>
       {steps.map((step, index) => {
@@ -17,33 +20,42 @@ export function Stepper({ steps, current }: StepperProps) {
         const active = index === current;
         const circleBg = done ? colors.accent : active ? colors.ink : colors.paper3;
         const labelColor = active ? colors.ink : done ? colors.ink2 : colors.ink3;
+        const content = (
+          <>
+            <View style={[styles.circle, { backgroundColor: circleBg }]}>
+              {done ? (
+                <Icon kind="check" size={10} color={colors.white} />
+              ) : (
+                <Text style={[styles.num, { color: done || active ? colors.white : colors.ink3 }]}>
+                  {index + 1}
+                </Text>
+              )}
+            </View>
+            <Text
+              style={[styles.label, { color: labelColor }]}
+              numberOfLines={1}
+              ellipsizeMode="tail"
+              adjustsFontSizeToFit
+              minimumFontScale={0.8}
+            >
+              {step}
+            </Text>
+          </>
+        );
         return (
           <Fragment key={step}>
-            <View style={styles.step}>
-              <View style={[styles.circle, { backgroundColor: circleBg }]}>
-                {done ? (
-                  <Icon kind="check" size={10} color={colors.white} />
-                ) : (
-                  <Text
-                    style={[
-                      styles.num,
-                      { color: done || active ? colors.white : colors.ink3 }
-                    ]}
-                  >
-                    {index + 1}
-                  </Text>
-                )}
-              </View>
-              <Text
-                style={[styles.label, { color: labelColor }]}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-                adjustsFontSizeToFit
-                minimumFontScale={0.8}
+            {onStepPress ? (
+              <Tappable
+                style={styles.step}
+                scaleTo={0.94}
+                accessibilityLabel={`Ir al paso ${index + 1}: ${step}`}
+                onPress={() => onStepPress(index)}
               >
-                {step}
-              </Text>
-            </View>
+                {content}
+              </Tappable>
+            ) : (
+              <View style={styles.step}>{content}</View>
+            )}
             {index < steps.length - 1 ? (
               <View
                 style={[

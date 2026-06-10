@@ -36,6 +36,7 @@ export type CurrentUser = {
 export type UserProfileUpdate = {
   display_name?: string | null;
   phone?: string | null;
+  onboarding_completed?: boolean;
 };
 
 export type PatientRegisterRequest = {

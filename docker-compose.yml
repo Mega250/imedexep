@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_SUPERUSER_PASSWORD}
       APP_API_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
       - med_postgres_data:/var/lib/postgresql/data
       - ./iMedExpBack/sql:/docker-entrypoint-initdb.d
@@ -79,11 +79,14 @@ services:
       - "8100:8100"
     volumes:
       - ./documentos:/documentos
+      - ./agente/agent:/agent:ro
     depends_on:
       - api
       - neo4j
     networks:
       - med_net
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
 volumes:
   med_postgres_data:

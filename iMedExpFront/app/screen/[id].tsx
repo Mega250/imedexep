@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Platform, useWindowDimensions, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { DesignScreenPage } from "@/atomic/pages/DesignScreenPage";
+import { ScreenErrorBoundary } from "@/atomic/molecules/ScreenErrorBoundary";
 import { ScreenFallback } from "@/atomic/molecules/ScreenFallback";
 import { DESKTOP_BREAKPOINT, toDesktopScreenId, toMobileScreenId } from "@/navigation/desktopVariants";
 import { findNativeScreen } from "@/navigation/nativeRegistry";
@@ -128,13 +129,19 @@ export default function ScreenRoute() {
     screenContent = NativeScreen ? <NativeScreen /> : <DesignScreenPage screenId={mobileId} />;
   }
 
+  // Cualquier error de render de la pantalla se contiene aquí en vez de
+  // desmontar el árbol y dejar la app en blanco. Se resetea al navegar (resetKey).
+  const guarded = (
+    <ScreenErrorBoundary resetKey={params.id}>{screenContent}</ScreenErrorBoundary>
+  );
+
   if (isPublic && Platform.OS === "web") {
     return (
       <View style={FILL} {...NO_INVERT_PROPS}>
-        {screenContent}
+        {guarded}
       </View>
     );
   }
 
-  return screenContent;
+  return guarded;
 }

@@ -6,6 +6,7 @@ import { ChatMessage, MessageBubble } from "@/atomic/chat/MessageBubble";
 import { sendToAssistant } from "@/services/api/asistenteApi";
 import { useSession } from "@/state/sessionStore";
 import { colors, spacing } from "@/theme/tokens";
+import { family } from "@/theme/typography";
 
 let counter = 0;
 const nextId = () => String((counter += 1));
@@ -21,17 +22,15 @@ export function AssistantChat() {
   const token = session.tokens?.access_token ?? null;
   const [messages, setMessages] = useState<ChatMessage[]>([WELCOME]);
   const [busy, setBusy] = useState(false);
-  const conversationId = useRef<string | null>(null);
   const listRef = useRef<FlatList<ChatMessage>>(null);
 
   const handleSend = useCallback(
     async (text: string, image: string | null) => {
       setMessages((m) => [...m, { id: nextId(), role: "user", text, image }]);
       setBusy(true);
-      const reply = await sendToAssistant({ message: text, imageBase64: image, token, conversationId: conversationId.current });
-      if (reply.conversation_id) {
-        conversationId.current = reply.conversation_id;
-      }
+      // Stateless: mandamos conversationId null SIEMPRE para que el backend no
+      // replaye el historial. Cada mensaje es independiente (menos tokens/costo).
+      const reply = await sendToAssistant({ message: text, imageBase64: image, token, conversationId: null });
       setMessages((m) => {
         const next = [
           ...m,
@@ -48,10 +47,8 @@ export function AssistantChat() {
     async (send: string, display: string) => {
       setMessages((m) => [...m, { id: nextId(), role: "user", text: display }]);
       setBusy(true);
-      const reply = await sendToAssistant({ message: send, token, conversationId: conversationId.current });
-      if (reply.conversation_id) {
-        conversationId.current = reply.conversation_id;
-      }
+      // Stateless: sin conversationId, el agente no recuerda el hilo.
+      const reply = await sendToAssistant({ message: send, token, conversationId: null });
       setMessages((m) => [
         ...m,
         { id: nextId(), role: reply.blocked ? "system" : "assistant", text: reply.answer, blocks: reply.blocks } as ChatMessage,
@@ -63,6 +60,13 @@ export function AssistantChat() {
 
   return (
     <View style={styles.flex}>
+      <View style={styles.privacyBanner}>
+        <Text style={styles.privacyText}>
+          🔒 Por tu privacidad y optimización del servicio, este chat no almacena
+          historial. Cada mensaje es independiente; el agente no recordará consultas
+          anteriores al enviar una nueva.
+        </Text>
+      </View>
       <FlatList
         ref={listRef}
         style={styles.flex}
@@ -82,4 +86,17 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   list: { padding: spacing.md, gap: spacing.xs },
   typing: { paddingHorizontal: spacing.page, paddingBottom: spacing.xs, color: colors.ink3, fontSize: 12, fontStyle: "italic" },
+  privacyBanner: {
+    backgroundColor: colors.paper3,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.rule,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+  },
+  privacyText: {
+    fontFamily: family.mono,
+    fontSize: 11,
+    lineHeight: 16,
+    color: colors.ink3,
+  },
 });

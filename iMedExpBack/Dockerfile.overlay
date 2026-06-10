@@ -1,0 +1,7 @@
+FROM imedexp_portable-api:latest
+WORKDIR /app
+USER root
+COPY app/ ./app/
+RUN chown -R appuser:appuser /app/app
+USER appuser
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--no-server-header"]

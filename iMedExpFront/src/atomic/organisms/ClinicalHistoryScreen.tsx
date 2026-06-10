@@ -7,7 +7,7 @@ import { RoundIconButton } from "@/atomic/atoms/RoundIconButton";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { RecordField, RecordFormModal } from "@/atomic/molecules/RecordFormModal";
 import { HistChips } from "@/atomic/organisms/HistChips";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { colors, radii } from "@/theme/tokens";
@@ -105,7 +105,7 @@ export function ClinicalHistoryScreen<T>({
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={1} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-hist" />}
       header={
         <>
           <ScreenTopBar

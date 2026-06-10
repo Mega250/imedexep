@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const PATIENT_DRAFT_KEY = "imedexp.registration.patient-draft.v1";
 
-export type PatientRegistrationStep = 0 | 1 | 2;
+export type PatientRegistrationStep = 0 | 1 | 2 | 3 | 4;
 
 export type PatientRegistrationDraft<T = Record<string, unknown>> = {
   version: 1;

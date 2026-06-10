@@ -9,10 +9,77 @@ const tokensPath = path.join(prototypeDir, "tokens.css");
 const generatedDir = path.join(root, "src", "design", "generated");
 const registryPath = path.join(generatedDir, "registry.ts");
 const htmlPath = path.join(generatedDir, "designHtml.ts");
+fs.mkdirSync(generatedDir, { recursive: true });
+
+function writeFallbackDesignFiles() {
+  fs.writeFileSync(
+    registryPath,
+    `export type DesignScreenMeta = {
+  id: string;
+  label: string;
+  width: number;
+  height: number;
+  componentName: string;
+  sectionId: string;
+  sectionTitle: string;
+  sectionSubtitle: string;
+};
+
+export const designScreens = [{
+  id: "home",
+  label: "Home",
+  width: 390,
+  height: 844,
+  componentName: "FallbackScreen",
+  sectionId: "fallback",
+  sectionTitle: "Fallback",
+  sectionSubtitle: "Prototype assets are not available"
+}] as const satisfies readonly DesignScreenMeta[];
+
+export const defaultDesignScreenId = "home";
+
+export function findDesignScreen(id: string | undefined): DesignScreenMeta {
+  return designScreens.find((screen) => screen.id === id) ?? designScreens[0];
+}
+`
+  );
+  fs.writeFileSync(
+    htmlPath,
+    `import type { DesignScreenMeta } from "./registry";
+
+export function createDesignHtml(screen: DesignScreenMeta): string {
+  return \`<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    html, body { margin: 0; min-height: 100%; font-family: system-ui, sans-serif; background: #f8fafc; color: #0f172a; }
+    main { min-height: 100vh; display: grid; place-items: center; padding: 24px; box-sizing: border-box; text-align: center; }
+    p { max-width: 420px; line-height: 1.5; color: #475569; }
+  </style>
+</head>
+<body>
+  <main>
+    <section>
+      <h1>\${screen.label}</h1>
+      <p>Prototype assets are not available in this checkout.</p>
+    </section>
+  </main>
+</body>
+</html>\`;
+}
+`
+  );
+}
+
+if (!fs.existsSync(indexPath) || !fs.existsSync(tokensPath)) {
+  writeFallbackDesignFiles();
+  process.exit(0);
+}
+
 const indexHtml = fs.readFileSync(indexPath, "utf8");
 const tokensCss = fs.readFileSync(tokensPath, "utf8");
-
-fs.mkdirSync(generatedDir, { recursive: true });
 
 function readAssetDataUri(assetPath) {
   const fullPath = path.join(root, assetPath);

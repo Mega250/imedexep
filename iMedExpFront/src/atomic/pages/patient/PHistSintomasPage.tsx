@@ -4,7 +4,7 @@ import { Card } from "@/atomic/atoms/Card";
 import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon } from "@/atomic/atoms/Icon";
 import { HistChips } from "@/atomic/organisms/HistChips";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen } from "@/navigation/screenRouter";
@@ -26,7 +26,7 @@ export function PHistSintomasPage() {
   const agendarBlocked = isScreenBlocked("pat-agendar");
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={1} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-hist" />}
       header={<Header />}
       contentStyle={styles.content}
     >

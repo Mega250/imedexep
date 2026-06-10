@@ -1,11 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode, Html5QrcodeScannerState } from "html5-qrcode";
 import { QrScannerProps } from "@/atomic/molecules/QrScanner.types";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
 
 let counter = 0;
+
+/**
+ * Detiene y limpia el escáner SIN lanzar nunca, sea cual sea su estado.
+ * `Html5Qrcode.stop()` lanza/rechaza si el escáner no está SCANNING/PAUSED
+ * (p. ej. al cancelar antes de que la cámara arranque o tras denegar permiso).
+ * Si ese error escapaba del cleanup de React, desmontaba el árbol y dejaba la
+ * pantalla en blanco. Aquí lo contenemos por completo.
+ */
+async function safeTeardown(scanner: Html5Qrcode | null): Promise<void> {
+  if (!scanner) return;
+  try {
+    const state = scanner.getState();
+    if (
+      state === Html5QrcodeScannerState.SCANNING ||
+      state === Html5QrcodeScannerState.PAUSED
+    ) {
+      await scanner.stop();
+    }
+    scanner.clear();
+  } catch {
+    /* ya estaba detenido o nunca arrancó: lo ignoramos a propósito */
+  }
+}
 
 /**
  * Escáner de QR para WEB (navegador del celular vía túnel HTTPS).
@@ -26,6 +49,7 @@ export function QrScanner({ onResult, onError, active = true, size = 224 }: QrSc
 
     handledRef.current = false;
     setError(null);
+    let cancelled = false; // true si se desmonta (cierre del modal / cancelación)
     const scanner = new Html5Qrcode(elementId, { verbose: false });
     scannerRef.current = scanner;
 
@@ -37,13 +61,19 @@ export function QrScanner({ onResult, onError, active = true, size = 224 }: QrSc
           if (handledRef.current) return;
           handledRef.current = true;
           onResult(decodedText);
-          scanner.stop().catch(() => {});
+          void safeTeardown(scanner); // detener tras leer, sin riesgo de throw
         },
         () => {
           /* fallo por frame sin QR: ignorar */
         }
       )
+      .then(() => {
+        // Si se canceló mientras la cámara aún arrancaba, apagarla ahora
+        // (evita que la cámara quede encendida tras cerrar el modal).
+        if (cancelled) void safeTeardown(scanner);
+      })
       .catch((err: unknown) => {
+        if (cancelled) return; // ya desmontado: no tocar estado de React
         const name = (err as { name?: string } | null)?.name;
         const msg =
           name === "NotAllowedError"
@@ -54,13 +84,9 @@ export function QrScanner({ onResult, onError, active = true, size = 224 }: QrSc
       });
 
     return () => {
-      const s = scannerRef.current;
+      cancelled = true;
       scannerRef.current = null;
-      if (s) {
-        s.stop()
-          .then(() => s.clear())
-          .catch(() => {});
-      }
+      void safeTeardown(scanner); // teardown seguro: nunca lanza al cerrar
     };
   }, [active, elementId, onError, onResult, size]);
 

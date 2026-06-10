@@ -93,6 +93,7 @@ class UserMeResponse(BaseModel):
 class UserProfileUpdate(BaseModel):
     display_name: str | None = Field(None, min_length=2, max_length=120)
     phone: str | None = Field(None, max_length=20)
+    onboarding_completed: bool | None = None
 
     @field_validator("display_name")
     @classmethod
