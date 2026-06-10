@@ -52,6 +52,7 @@ services:
       POSTGRES_HOST: postgres
       POSTGRES_USER: app_api
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      AGENT_INTERNAL_URL: http://agente:8100
     ports:
       - "8000:8000"
     depends_on:

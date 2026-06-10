@@ -13,6 +13,7 @@ from app.core.metrics import metrics_collector
 from app.core.middleware import MaxBodySizeMiddleware, RateLimitMiddleware
 from app.api.v1 import (
     admin,
+    agent_proxy,
     appointments,
     auth,
     clinical_extras,
@@ -182,6 +183,7 @@ app.include_router(diseases.router, prefix="/api/v1")
 app.include_router(menstrual_cycles.router, prefix="/api/v1")
 app.include_router(personal_log.router, prefix="/api/v1")
 app.include_router(reminders.router, prefix="/api/v1")
+app.include_router(agent_proxy.router, prefix="/api/v1")
 
 
 @app.on_event("startup")

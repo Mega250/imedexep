@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Button } from "@/atomic/atoms/Button";
 import { Tappable } from "@/atomic/atoms/Tappable";
+import { DESKTOP_BREAKPOINT } from "@/navigation/desktopVariants";
 import { TargetRect, useOnboarding } from "@/state/onboarding";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
@@ -33,7 +34,8 @@ export function TourOverlay() {
     };
   }, [active, index, measureCurrent]);
 
-  if (!active || !steps.length) return null;
+  // Solo mostrar en mobile; en desktop el spotlight no se posiciona bien.
+  if (!active || !steps.length || width >= DESKTOP_BREAKPOINT) return null;
 
   const step = steps[index];
   const isLast = index === steps.length - 1;

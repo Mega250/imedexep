@@ -1,25 +1,6 @@
-import Constants from "expo-constants";
-import { Platform } from "react-native";
+import { apiBaseUrl } from "@/services/api/client";
 
-const AGENT_PORT = 8100;
-const configured = process.env.EXPO_PUBLIC_AGENT_BASE_URL?.trim();
-
-function resolveAgentBaseUrl(): string {
-  if (configured) return configured;
-  if (Platform.OS === "web" && typeof window !== "undefined") {
-    return `${window.location.protocol}//${window.location.hostname}:${AGENT_PORT}`;
-  }
-  const hostUri = (Constants as unknown as { expoConfig?: { hostUri?: string }; manifest?: { debuggerHost?: string } }).expoConfig?.hostUri
-    || (Constants as unknown as { manifest?: { debuggerHost?: string } }).manifest?.debuggerHost
-    || "";
-  const host = String(hostUri).split("://").pop()?.split(":")[0]?.trim();
-  if (host && host !== "localhost" && host !== "127.0.0.1") {
-    return `http://${host}:${AGENT_PORT}`;
-  }
-  return `http://localhost:${AGENT_PORT}`;
-}
-
-export const agentBaseUrl = resolveAgentBaseUrl();
+const AGENT_PREFIX = `${apiBaseUrl}/api/v1/agent`;
 
 export type AssistantBlock = { tool: string; data: unknown };
 
@@ -45,7 +26,7 @@ export async function sendToAssistant(input: AssistantInput): Promise<AssistantR
   }
   let res: Response;
   try {
-    res = await fetch(`${agentBaseUrl}/chat`, {
+    res = await fetch(`${AGENT_PREFIX}/chat`, {
       method: "POST",
       headers,
       body: JSON.stringify({
@@ -66,7 +47,7 @@ export async function sendToAssistant(input: AssistantInput): Promise<AssistantR
 
 export async function assistantHealth(): Promise<{ status: string; agent?: string } | null> {
   try {
-    const res = await fetch(`${agentBaseUrl}/health`);
+    const res = await fetch(`${AGENT_PREFIX}/health`);
     if (!res.ok) return null;
     return (await res.json()) as { status: string; agent?: string };
   } catch {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocalSearchParams } from "expo-router";
-import { Animated, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
+import { Animated, Keyboard, Platform, Pressable, StyleSheet, Text, TextInput, useWindowDimensions, View } from "react-native";
 import { USE_NATIVE_DRIVER } from "@/utils/nativeDriver";
 import { Badge } from "@/atomic/atoms/Badge";
 import { Button } from "@/atomic/atoms/Button";
@@ -169,7 +169,14 @@ export function VerifyEmailMobilePage() {
           <Text style={styles.eyebrow}>Código de 6 dígitos</Text>
           <Pressable
             style={styles.codeRow}
-            onPress={() => inputRef.current?.focus()}
+            onPress={() => {
+              if (Platform.OS !== "web") {
+                Keyboard.dismiss();
+                setTimeout(() => inputRef.current?.focus(), 120);
+              } else {
+                inputRef.current?.focus();
+              }
+            }}
           >
             {digits.map((digit, index) => {
               const active = index === activeIndex;
