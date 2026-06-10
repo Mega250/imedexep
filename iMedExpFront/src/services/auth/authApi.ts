@@ -20,6 +20,7 @@ export type VerificationStatusResponse = {
   expires_at: string;
   next_resend_at: string;
   attempts_in_window: number;
+  debug_code?: string | null;
 };
 
 export type CurrentUser = {

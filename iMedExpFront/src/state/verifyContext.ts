@@ -8,6 +8,7 @@ export type VerifyStatus = {
   expiresAt: string;
   nextResendAt: string;
   attemptsInWindow: number;
+  debugCode?: string | null;
 };
 
 export async function setPendingVerifyEmail(email: string): Promise<void> {
