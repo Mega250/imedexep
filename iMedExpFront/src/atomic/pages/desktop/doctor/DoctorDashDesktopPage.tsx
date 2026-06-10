@@ -5,6 +5,7 @@ import Svg, { Circle, Defs, Pattern, RadialGradient, Rect, Stop } from "react-na
 import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon, IconKind } from "@/atomic/atoms/Icon";
 import { Tappable } from "@/atomic/atoms/Tappable";
+import { QuickAppointmentModal } from "@/atomic/molecules/QuickAppointmentModal";
 import { DesktopShell } from "@/atomic/templates/DesktopShell";
 import { doctorNav } from "@/navigation/desktopNavConfigs";
 import { goToScreen } from "@/navigation/screenRouter";
@@ -23,7 +24,7 @@ const TILES: [IconKind, string, string, boolean, string | null][] = [
   ["plus", "Nueva nota", "En consulta", false, "doctor-active"],
   ["rx", "Receta digital", "Firma activa", false, "dsk-recetas"],
   ["qr", "Vincular paciente", "Generar QR", true, "doc-qr"],
-  ["cal", "Agendar cita", "Nueva", false, "dsk-agenda"],
+  ["cal", "Agendar cita", "Nueva", false, "dsk-doc-agendar"],
   ["lab", "Solicitar estudio", "Lab / imagen", false, "dsk-validaciones"]
 ];
 
@@ -390,6 +391,8 @@ function PendientesCard({ agenda, names }: { agenda: Appointment[]; names: Recor
 export function DoctorDashDesktopPage() {
   const [state, setState] = useState<DashState>(initialState);
   const [names, setNames] = useState<Record<number, string>>({});
+  const [quickModal, setQuickModal] = useState(false);
+  const [doctorRecord, setDoctorRecord] = useState<{ id: number; institution_id: number | null } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -444,6 +447,7 @@ export function DoctorDashDesktopPage() {
           return;
         }
         setNames(nameMap);
+        setDoctorRecord({ id: doctorId, institution_id: doctor.institution_id ?? null });
         setState({
           loading: false,
           error: null,
@@ -511,6 +515,22 @@ export function DoctorDashDesktopPage() {
           <FadeIn delay={180}>
             <AccesoRapido />
           </FadeIn>
+          <FadeIn delay={200}>
+            <Tappable
+              onPress={() => setQuickModal(true)}
+              scaleTo={0.98}
+              style={styles.urgBar}
+            >
+              <View style={styles.urgBarIcon}>
+                <Icon kind="alert" size={16} color={colors.alert} />
+              </View>
+              <View style={styles.urgBarText}>
+                <Text style={styles.urgBarTitle}>Cita rápida de emergencia</Text>
+                <Text style={styles.urgBarSub}>Buscar paciente por CURP y agendar en segundos</Text>
+              </View>
+              <Icon kind="chev" size={14} color={colors.ink3} />
+            </Tappable>
+          </FadeIn>
           <FadeIn delay={240}>
             <View style={styles.bottomGrid}>
               <View style={styles.bottomWide}>
@@ -523,6 +543,21 @@ export function DoctorDashDesktopPage() {
           </FadeIn>
         </>
       )}
+      {doctorRecord ? (
+        <QuickAppointmentModal
+          visible={quickModal}
+          doctorId={doctorRecord.id}
+          institutionId={doctorRecord.institution_id}
+          role="doctor"
+          onClose={() => setQuickModal(false)}
+          onCreated={() => {
+            setQuickModal(false);
+            goToScreen("doctor-dash");
+          }}
+          onStartConsultation={() => goToScreen("doctor-active")}
+          onViewAgenda={() => goToScreen("dsk-agenda")}
+        />
+      ) : null}
     </DesktopShell>
   );
 }
@@ -917,6 +952,42 @@ const styles = StyleSheet.create({
   },
   tileHintAccent: {
     color: "rgba(255,255,255,0.78)"
+  },
+  urgBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 14,
+    marginHorizontal: 48,
+    marginTop: 12,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    borderRadius: radii.lg,
+    backgroundColor: colors.alertSoft,
+    borderWidth: 1,
+    borderColor: colors.alertRule
+  },
+  urgBarIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 10,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  urgBarText: {
+    flex: 1,
+    gap: 2
+  },
+  urgBarTitle: {
+    fontFamily: family.medium,
+    fontSize: 14,
+    color: colors.ink
+  },
+  urgBarSub: {
+    fontFamily: family.mono,
+    fontSize: 10.5,
+    color: colors.alert,
+    letterSpacing: 0.3
   },
   bottomGrid: {
     flexDirection: "row",

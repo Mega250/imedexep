@@ -43,6 +43,20 @@ El agente es **agnóstico**: funciona con el proveedor que tengas. En `.env`:
 Si usas un modelo que el motor no reconoce, lo trata con el máximo de salvaguardas (nunca le da
 libertad de un modelo grande sin sus controles).
 
+## Migraciones SQL en bases de datos existentes
+PostgreSQL solo ejecuta los archivos de `iMedExpBack/sql/` la **primera vez** que crea el
+volumen de datos. Si ya tienes el volumen creado y se agregaron migraciones nuevas (por ejemplo
+`123PendingRegistration.sql` o `124PatientStaffInsert.sql`), estas **no se aplican
+automaticamente**. Para ejecutarlas manualmente:
+```bash
+sudo docker exec -i med_postgres psql -U postgres -d med_records < iMedExpBack/sql/123PendingRegistration.sql
+sudo docker exec -i med_postgres psql -U postgres -d med_records < iMedExpBack/sql/124PatientStaffInsert.sql
+```
+Si prefieres recrear la base de datos desde cero (pierdes datos):
+```bash
+bash iMedExpBack/scripts/linux/loadBd.sh
+```
+
 ## Estructura
 - `agente/` — el agente (motor compilado). No editable.
 - `iMedExpBack/` — la API de iMedExp.

@@ -10,6 +10,7 @@ import { VerifyEmailDesktopPage } from "@/atomic/pages/desktop/auth/VerifyEmailD
 import { DoctorActiveDesktopPage } from "@/atomic/pages/desktop/doctor/DoctorActiveDesktopPage";
 import { DskConsultaRegistroDesktopPage } from "@/atomic/pages/desktop/doctor/DskConsultaRegistroDesktopPage";
 import { DskConsultaDetalleDesktopPage } from "@/atomic/pages/desktop/doctor/DskConsultaDetalleDesktopPage";
+import { DocAgendarDesktopPage } from "@/atomic/pages/desktop/doctor/DocAgendarDesktopPage";
 import { DoctorDashDesktopPage } from "@/atomic/pages/desktop/doctor/DoctorDashDesktopPage";
 import { DskAgendaDesktopPage } from "@/atomic/pages/desktop/doctor/DskAgendaDesktopPage";
 import { DskConsultasDesktopPage } from "@/atomic/pages/desktop/doctor/DskConsultasDesktopPage";
@@ -80,6 +81,7 @@ export const desktopScreens: Record<string, ComponentType> = {
   "reg-doctor": RegDoctorDesktopPage,
   "verify-email": VerifyEmailDesktopPage,
   "doctor-dash": DoctorDashDesktopPage,
+  "dsk-doc-agendar": DocAgendarDesktopPage,
   "doctor-active": DoctorActiveDesktopPage,
   "dsk-consulta-registro": DskConsultaRegistroDesktopPage,
   "dsk-consulta-detalle": DskConsultaDetalleDesktopPage,

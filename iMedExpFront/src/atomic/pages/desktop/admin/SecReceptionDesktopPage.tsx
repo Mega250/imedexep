@@ -5,6 +5,7 @@ import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon } from "@/atomic/atoms/Icon";
 import { RadialBlob } from "@/atomic/atoms/RadialBlob";
 import { Tappable } from "@/atomic/atoms/Tappable";
+import { QuickAppointmentModal } from "@/atomic/molecules/QuickAppointmentModal";
 import { DesktopShell } from "@/atomic/templates/DesktopShell";
 import { secretaryNav } from "@/navigation/desktopNavConfigs";
 import { goToScreen, replaceScreen } from "@/navigation/screenRouter";
@@ -96,6 +97,7 @@ export function SecReceptionDesktopPage() {
   const [error, setError] = useState<string | null>(null);
   const [activeDoctorFilter, setActiveDoctorFilter] = useState<number | "all">("all");
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [quickModal, setQuickModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -226,16 +228,28 @@ export function SecReceptionDesktopPage() {
       searchPlaceholder="Buscar paciente, CURP, cita…"
       hasAlert
       topBarRight={
-        <Button
-          label="Agendar cita"
-          variant="primary"
-          size="sm"
-          block={false}
-          height={42}
-          radius={radii.md}
-          iconLeft="plus"
-          onPress={() => goToScreen("sec-agenda")}
-        />
+        <View style={styles.topBarActions}>
+          <Button
+            label="Cita rápida"
+            variant="accent"
+            size="sm"
+            block={false}
+            height={42}
+            radius={radii.md}
+            iconLeft="alert"
+            onPress={() => setQuickModal(true)}
+          />
+          <Button
+            label="Agendar cita"
+            variant="primary"
+            size="sm"
+            block={false}
+            height={42}
+            radius={radii.md}
+            iconLeft="plus"
+            onPress={() => goToScreen("sec-agenda")}
+          />
+        </View>
       }
     >
       {loading ? (
@@ -410,11 +424,28 @@ export function SecReceptionDesktopPage() {
           </View>
         </View>
       </View>
+      {doctors.length > 0 ? (
+        <QuickAppointmentModal
+          visible={quickModal}
+          doctorId={doctors[0].id}
+          institutionId={doctors[0].institution_id ?? null}
+          role="secretary"
+          onClose={() => setQuickModal(false)}
+          onCreated={() => {
+            setQuickModal(false);
+            goToScreen("sec-reception");
+          }}
+        />
+      ) : null}
     </DesktopShell>
   );
 }
 
 const styles = StyleSheet.create({
+  topBarActions: {
+    flexDirection: "row",
+    gap: 8
+  },
   eyebrow: {
     ...text.eyebrow,
     color: colors.ink3

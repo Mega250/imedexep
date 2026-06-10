@@ -6,6 +6,7 @@ import { Icon } from "@/atomic/atoms/Icon";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
 import { FAB } from "@/atomic/molecules/FAB";
+import { QuickAppointmentModal } from "@/atomic/molecules/QuickAppointmentModal";
 import { Section } from "@/atomic/molecules/Section";
 import { StatTile } from "@/atomic/molecules/StatTile";
 import { IconTabBar } from "@/atomic/organisms/IconTabBar";
@@ -67,6 +68,7 @@ export function SecReceptionMobilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionMessage, setActionMessage] = useState<string | null>(null);
+  const [quickModal, setQuickModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -234,6 +236,21 @@ export function SecReceptionMobilePage() {
       </FadeIn>
       {actionMessage ? <Text style={styles.actionText}>{actionMessage}</Text> : null}
 
+      {doctors.length > 0 ? (
+        <FadeIn delay={50}>
+          <Tappable onPress={() => setQuickModal(true)} scaleTo={0.97} style={styles.urgBtn}>
+            <View style={styles.urgIcon}>
+              <Icon kind="alert" size={14} color={colors.alert} />
+            </View>
+            <View style={styles.flex}>
+              <Text style={styles.urgLabel}>Cita rápida</Text>
+              <Text style={styles.urgSub}>Urgencia · agendar ahora</Text>
+            </View>
+            <Icon kind="chev" size={13} color={colors.ink3} />
+          </Tappable>
+        </FadeIn>
+      ) : null}
+
       <FadeIn delay={70}>
         <View style={styles.statRow}>
           <StatTile label="En sala" value={String(inRoom)} sub={`${inConsult} en consulta`} />
@@ -304,6 +321,20 @@ export function SecReceptionMobilePage() {
           <Text style={styles.empty}>Sin tareas de seguimiento por ahora.</Text>
         </Section>
       </FadeIn>
+
+      {doctors.length > 0 ? (
+        <QuickAppointmentModal
+          visible={quickModal}
+          doctorId={doctors[0].id}
+          institutionId={doctors[0].institution_id ?? null}
+          role="secretary"
+          onClose={() => setQuickModal(false)}
+          onCreated={() => {
+            setQuickModal(false);
+            goToScreen("sec-reception-mob");
+          }}
+        />
+      ) : null}
     </MobileScreen>
   );
 }
@@ -339,6 +370,37 @@ const styles = StyleSheet.create({
     color: colors.ink3,
     paddingVertical: 12,
     textAlign: "center"
+  },
+  urgBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: radii.md,
+    backgroundColor: colors.alertSoft,
+    borderWidth: 1,
+    borderColor: colors.alertRule
+  },
+  urgIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  urgLabel: {
+    fontFamily: family.medium,
+    fontSize: 13,
+    color: colors.ink
+  },
+  urgSub: {
+    fontFamily: family.mono,
+    fontSize: 9.5,
+    color: colors.alert,
+    marginTop: 1
   },
   heroEyebrow: {
     fontFamily: family.mono,
