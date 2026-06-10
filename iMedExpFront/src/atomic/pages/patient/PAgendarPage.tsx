@@ -7,7 +7,7 @@ import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon } from "@/atomic/atoms/Icon";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { Tappable } from "@/atomic/atoms/Tappable";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goBack } from "@/navigation/screenRouter";
 import { fetchAppointments, postAppointment } from "@/services/api/appointmentsApi";
@@ -182,7 +182,7 @@ export function PAgendarPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={2} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-citas" />}
       header={<Header />}
       contentStyle={styles.content}
     >

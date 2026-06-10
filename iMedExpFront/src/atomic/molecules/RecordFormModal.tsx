@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/atomic/atoms/Button";
 import { FormField } from "@/atomic/molecules/FormField";
@@ -22,6 +22,8 @@ type RecordFormModalProps = {
   fields: RecordField[];
   submitting?: boolean;
   error?: string | null;
+  /** Valores precargados al abrir (edición). Si se omite, el formulario arranca vacío (alta). */
+  initialValues?: Record<string, string>;
   onClose: () => void;
   onSubmit: (values: Record<string, string>) => void;
 };
@@ -32,11 +34,27 @@ export function RecordFormModal({
   fields,
   submitting = false,
   error,
+  initialValues,
   onClose,
   onSubmit
 }: RecordFormModalProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [localError, setLocalError] = useState<string | null>(null);
+
+  // Mantenemos la última referencia de initialValues sin que dispare el efecto:
+  // así el reset ocurre SOLO al abrir, no en cada render (que borraría lo tecleado).
+  const initialRef = useRef(initialValues);
+  initialRef.current = initialValues;
+
+  // Resetea el estado interno cada vez que el modal se abre: evita que queden
+  // datos/errores rancios de una apertura anterior (bug "no guarda salvo que
+  // borres una primero") y permite precargar valores en modo edición.
+  useEffect(() => {
+    if (visible) {
+      setValues(initialRef.current ?? {});
+      setLocalError(null);
+    }
+  }, [visible]);
 
   const set = (k: string) => (v: string) => setValues((prev) => ({ ...prev, [k]: v }));
 

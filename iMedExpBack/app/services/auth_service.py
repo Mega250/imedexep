@@ -125,10 +125,16 @@ class AuthService:
         user_id: int,
         display_name: str | None | object = _UNSET,
         phone: str | None | object = _UNSET,
+        onboarding_completed: bool | None | object = _UNSET,
     ) -> User:
         user = await self.get_user_by_id(user_id)
         attrs = dict(user.access_attributes or {})
 
+        if onboarding_completed is not _UNSET:
+            if onboarding_completed:
+                attrs["onboarding_completed"] = True
+            else:
+                attrs.pop("onboarding_completed", None)
         if display_name is not _UNSET:
             if display_name:
                 attrs["display_name"] = display_name.strip()

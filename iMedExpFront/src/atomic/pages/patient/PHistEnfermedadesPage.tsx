@@ -6,7 +6,7 @@ import { Icon } from "@/atomic/atoms/Icon";
 import { RoundIconButton } from "@/atomic/atoms/RoundIconButton";
 import { RecordFormModal } from "@/atomic/molecules/RecordFormModal";
 import { HistChips } from "@/atomic/organisms/HistChips";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import {
@@ -93,7 +93,7 @@ export function PHistEnfermedadesPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={1} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-hist" />}
       header={
         <>
           <ScreenTopBar

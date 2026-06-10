@@ -156,11 +156,8 @@ function HomeNav() {
         <View />
       )}
       <View style={[styles.navSide, styles.navEnd]}>
-        <Tappable onPress={() => goToScreen("login")} scaleTo={0.97}>
-          <Text style={styles.navLogin} numberOfLines={1}>Iniciar sesión</Text>
-        </Tappable>
         <Button
-          label="Comenzar gratis  →"
+          label="Crear cuenta  →"
           variant="accent"
           size="sm"
           block={false}
@@ -308,13 +305,13 @@ function HomeHero() {
             <FadeIn delay={320}>
               <View style={styles.heroCta}>
                 <Button
-                  label="Soy Paciente → empezar gratis"
+                  label="Soy Paciente → iniciar sesión"
                   variant="accent"
                   block={false}
-                  onPress={() => goToScreen("reg-patient")}
+                  onPress={() => goToScreen("login")}
                 />
                 <Button
-                  label="Soy Médico → acceder"
+                  label="Soy Médico → iniciar sesión"
                   variant="ghost"
                   block={false}
                   onPress={() => goToScreen("login")}

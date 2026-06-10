@@ -3,6 +3,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Icon, IconKind } from "@/atomic/atoms/Icon";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { replaceScreen } from "@/navigation/screenRouter";
+import { useTourTarget } from "@/state/onboarding";
 import { colors } from "@/theme/tokens";
 import { family } from "@/theme/typography";
 
@@ -20,8 +21,9 @@ type IconTabBarProps = {
 
 export function IconTabBar({ tabs, active = -1, activeScreen }: IconTabBarProps) {
   const insets = useSafeAreaInsets();
+  const navTourRef = useTourTarget("nav"); // ancla del tour de bienvenida
   return (
-    <View style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
+    <View ref={navTourRef} style={[styles.wrap, { paddingBottom: Math.max(insets.bottom, 12) }]}>
       {tabs.map((tab, index) => {
         const on = activeScreen ? tab.screen === activeScreen : index === active;
         return (

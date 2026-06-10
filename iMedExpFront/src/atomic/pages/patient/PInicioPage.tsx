@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Avatar } from "@/atomic/atoms/Avatar";
 import { Button } from "@/atomic/atoms/Button";
@@ -8,7 +8,7 @@ import { Icon, IconKind } from "@/atomic/atoms/Icon";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen } from "@/navigation/screenRouter";
 import { Appointment, fetchAppointments } from "@/services/api/appointmentsApi";
@@ -17,6 +17,8 @@ import { PatientFull, fetchPatientFull } from "@/services/api/patientsApi";
 import { VitalSign, fetchLatestPatientVitals } from "@/services/api/vitalsApi";
 import { silentOrNull } from "@/services/api/silent";
 import { isScreenBlocked, useBlockedScreens } from "@/state/blockedScreens";
+import { PATIENT_TOUR_STEPS, useOnboarding, useTourTarget } from "@/state/onboarding";
+import { useSession } from "@/state/sessionStore";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
 import { formatApptDateTime } from "@/utils/dates";
@@ -82,6 +84,19 @@ export function PInicioPage() {
   const agendarBlocked = isScreenBlocked("pat-agendar");
   const visibleQuick = QUICK.filter((item) => !isScreenBlocked(item.screen));
 
+  // Tour de bienvenida: se activa una sola vez (primer login) y nunca más.
+  const { start } = useOnboarding();
+  const session = useSession();
+  const primaryTourRef = useTourTarget("pat-primary");
+  const tourStartedRef = useRef(false);
+  useEffect(() => {
+    if (tourStartedRef.current || !session.user) return;
+    if (session.user.access_attributes?.onboarding_completed === true) return;
+    tourStartedRef.current = true;
+    const t = setTimeout(() => start(PATIENT_TOUR_STEPS), 700); // deja asentar el layout
+    return () => clearTimeout(t);
+  }, [session.user, start]);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -120,7 +135,7 @@ export function PInicioPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={0} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-inicio" />}
       contentStyle={styles.content}
     >
       <FadeIn>
@@ -146,6 +161,7 @@ export function PInicioPage() {
           </View>
         ) : null}
 
+        <View ref={primaryTourRef} collapsable={false}>
         <FadeIn delay={130}>
           <DarkPanel
             radius={radii.xl}
@@ -186,6 +202,7 @@ export function PInicioPage() {
             )}
           </DarkPanel>
         </FadeIn>
+        </View>
 
         <FadeIn delay={190}>
           <SectionLabel label="Acceso rápido" style={styles.sectionGap} />

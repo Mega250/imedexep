@@ -8,13 +8,14 @@ import { RoundIconButton } from "@/atomic/atoms/RoundIconButton";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { RecordField, RecordFormModal } from "@/atomic/molecules/RecordFormModal";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { PasswordChangePanel } from "@/atomic/organisms/PasswordChangePanel";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen, replaceScreen } from "@/navigation/screenRouter";
 import { clearCurrentPatientCache, getCurrentPatientId } from "@/services/api/currentPatient";
-import { Patient, SocioeconomicData, fetchPatient, fetchSocioeconomic } from "@/services/api/patientsApi";
+import { PatientFull, SocioeconomicData, fetchPatientFull, fetchSocioeconomic, updatePatientAuthed } from "@/services/api/patientsApi";
 import { logout as performLogout } from "@/services/api/authedRequest";
 import { loadSession } from "@/state/sessionStore";
 import { colors, radii } from "@/theme/tokens";
@@ -40,17 +41,43 @@ function genderLabel(value: string | null): string {
   return map[value] ?? value;
 }
 
+// El backend guarda el género como código (M/F/O); en el formulario mostramos
+// etiquetas legibles y convertimos en ambos sentidos.
+const GENDER_CODE_TO_LABEL: Record<string, string> = { M: "Masculino", F: "Femenino", O: "Otro" };
+const GENDER_LABEL_TO_CODE: Record<string, string> = { Masculino: "M", Femenino: "F", Otro: "O" };
+
+const PROFILE_EDIT_FIELDS: RecordField[] = [
+  { key: "first_name", label: "Nombre", required: true },
+  { key: "last_name", label: "Apellidos", required: true },
+  { key: "gender", label: "Género", type: "select", options: ["Masculino", "Femenino", "Otro"] },
+  {
+    key: "blood_type",
+    label: "Tipo de sangre",
+    type: "select",
+    options: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
+  },
+  { key: "phone", label: "Teléfono", keyboardType: "phone-pad" },
+  { key: "street_address", label: "Calle y número" },
+  { key: "neighborhood", label: "Colonia" },
+  { key: "postal_code", label: "Código postal", keyboardType: "numeric" },
+  { key: "city", label: "Ciudad" },
+  { key: "state", label: "Estado" }
+];
+
 async function logout() {
   clearCurrentPatientCache();
   await performLogout();
 }
 
 export function PPerfilPage() {
-  const [patient, setPatient] = useState<Patient | null>(null);
+  const [patient, setPatient] = useState<PatientFull | null>(null);
   const [email, setEmail] = useState<string>("");
   const [soc, setSoc] = useState<SocioeconomicData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +85,7 @@ export function PPerfilPage() {
       try {
         const [patientId, session] = await Promise.all([getCurrentPatientId(), loadSession()]);
         const [data, socData] = await Promise.all([
-          fetchPatient(patientId),
+          fetchPatientFull(patientId),
           fetchSocioeconomic(patientId).catch(() => null)
         ]);
         if (!cancelled) {
@@ -78,6 +105,48 @@ export function PPerfilPage() {
       cancelled = true;
     };
   }, []);
+
+  async function saveProfile(v: Record<string, string>) {
+    if (!patient) return;
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await updatePatientAuthed(patient.id, {
+        first_name: v.first_name?.trim(),
+        last_name: v.last_name?.trim(),
+        gender: v.gender ? GENDER_LABEL_TO_CODE[v.gender] ?? null : null,
+        blood_type: v.blood_type || null,
+        phone: v.phone?.trim() || null,
+        street_address: v.street_address?.trim() || null,
+        neighborhood: v.neighborhood?.trim() || null,
+        postal_code: v.postal_code?.trim() || null,
+        city: v.city?.trim() || null,
+        state: v.state?.trim() || null
+      });
+      clearCurrentPatientCache();
+      setPatient(await fetchPatientFull(patient.id)); // refresca la vista con los datos guardados
+      setEditOpen(false);
+    } catch (err) {
+      setSaveError(err instanceof Error ? err.message : "No pudimos guardar tu perfil.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // Precargamos el formulario con TODOS los campos actuales (perfil completo) para
+  // no enviar null en los que no se tocaron y así evitar borrar datos existentes.
+  const editInitialValues: Record<string, string> = {
+    first_name: patient?.first_name ?? "",
+    last_name: patient?.last_name ?? "",
+    gender: patient?.gender ? GENDER_CODE_TO_LABEL[patient.gender] ?? "" : "",
+    blood_type: patient?.blood_type ?? "",
+    phone: patient?.phone ?? "",
+    street_address: patient?.street_address ?? "",
+    neighborhood: patient?.neighborhood ?? "",
+    postal_code: patient?.postal_code ?? "",
+    city: patient?.city ?? "",
+    state: patient?.state ?? ""
+  };
 
   const initials = patient
     ? `${patient.first_name?.[0] ?? ""}${patient.last_name?.[0] ?? ""}`.toUpperCase()
@@ -104,12 +173,18 @@ export function PPerfilPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={4} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-perfil" />}
       header={
         <ScreenTopBar
           sub="Cuenta · paciente"
           title="Mi perfil"
-          right={<RoundIconButton icon="edit" variant="ghost" />}
+          right={
+            <RoundIconButton
+              icon="edit"
+              variant="ghost"
+              onPress={() => patient && setEditOpen(true)}
+            />
+          }
         />
       }
       contentStyle={styles.content}
@@ -148,14 +223,16 @@ export function PPerfilPage() {
         <SectionLabel label="Datos personales" style={styles.section} />
         <Card radius={radii.lg}>
           {personal.map(([key, value], index) => (
-            <View
+            <Tappable
               key={key}
+              onPress={() => patient && setEditOpen(true)}
+              accessibilityLabel={`Editar ${key}`}
               style={[styles.dataRow, index < personal.length - 1 ? styles.rowBorder : null]}
             >
               <Text style={styles.dataKey}>{key}</Text>
               <Text style={styles.dataValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>
               <Icon kind="edit" size={12} color={colors.ink3} />
-            </View>
+            </Tappable>
           ))}
         </Card>
       </FadeIn>
@@ -164,8 +241,10 @@ export function PPerfilPage() {
         <SectionLabel label="Contacto" style={styles.section} />
         <Card radius={radii.lg}>
           {contact.map(([icon, value, sub], index) => (
-            <View
+            <Tappable
               key={`${value}-${index}`}
+              onPress={() => patient && setEditOpen(true)}
+              accessibilityLabel={`Editar ${sub}`}
               style={[styles.contactRow, index < contact.length - 1 ? styles.rowBorder : null]}
             >
               <Icon kind={icon} size={15} color={colors.ink2} />
@@ -174,7 +253,7 @@ export function PPerfilPage() {
                 <Text style={styles.contactSub}>{sub}</Text>
               </View>
               <Icon kind="edit" size={12} color={colors.ink3} />
-            </View>
+            </Tappable>
           ))}
         </Card>
       </FadeIn>
@@ -231,6 +310,17 @@ export function PPerfilPage() {
         </Tappable>
         <Text style={styles.version}>imedexp · paciente</Text>
       </FadeIn>
+
+      <RecordFormModal
+        visible={editOpen}
+        title="Editar perfil"
+        fields={PROFILE_EDIT_FIELDS}
+        initialValues={editInitialValues}
+        submitting={saving}
+        error={saveError}
+        onClose={() => setEditOpen(false)}
+        onSubmit={saveProfile}
+      />
     </MobileScreen>
   );
 }

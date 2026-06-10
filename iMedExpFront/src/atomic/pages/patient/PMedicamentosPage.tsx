@@ -4,7 +4,7 @@ import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon } from "@/atomic/atoms/Icon";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { usePatient } from "@/state/patientContext";
@@ -19,7 +19,7 @@ export function PMedicamentosPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={3} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-hist" />}
       header={<ScreenTopBar sub="Asignados por tu médico" title="Medicamentos" />}
       contentStyle={styles.content}
     >

@@ -10,7 +10,7 @@ import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
 import { RecordFormModal } from "@/atomic/molecules/RecordFormModal";
 import { HistChips } from "@/atomic/organisms/HistChips";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { getCurrentPatientId } from "@/services/api/currentPatient";
@@ -168,7 +168,7 @@ export function PHistPesoPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={1} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-hist" />}
       header={<Header onAdd={() => setOpen(true)} />}
       contentStyle={styles.content}
     >

@@ -94,6 +94,8 @@ async def update_me(
         updates["display_name"] = body.display_name
     if "phone" in body.model_fields_set:
         updates["phone"] = body.phone
+    if "onboarding_completed" in body.model_fields_set:
+        updates["onboarding_completed"] = body.onboarding_completed
     user = await service.update_user_profile(token.user_id, **updates)
     return UserMeResponse(
         id=user.id,

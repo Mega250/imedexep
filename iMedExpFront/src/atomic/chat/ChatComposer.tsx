@@ -16,10 +16,16 @@ export function ChatComposer({ onSend, disabled }: Props) {
   async function pickImage() {
     const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!perm.granted) return;
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 0.7, base64: true });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsMultipleSelection: false, // una sola por selección (blindaje, incluye el diálogo web)
+      quality: 0.7,
+      base64: true
+    });
     if (result.canceled || !result.assets?.length) return;
     const asset = result.assets[0];
     if (asset.base64) {
+      // Reemplaza automáticamente la imagen anterior: siempre queda una sola adjunta.
       setImage(`data:image/jpeg;base64,${asset.base64}`);
     }
   }
@@ -43,7 +49,13 @@ export function ChatComposer({ onSend, disabled }: Props) {
         </View>
       )}
       <View style={styles.bar}>
-        <Pressable onPress={pickImage} style={styles.attach} hitSlop={6} disabled={disabled}>
+        <Pressable
+          onPress={pickImage}
+          style={styles.attach}
+          hitSlop={6}
+          disabled={disabled}
+          accessibilityLabel={image ? "Reemplazar la imagen adjunta" : "Adjuntar una imagen"}
+        >
           <Text style={styles.attachIcon}>+</Text>
         </Pressable>
         <TextInput

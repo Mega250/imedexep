@@ -7,7 +7,7 @@ import { RoundIconButton } from "@/atomic/atoms/RoundIconButton";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
-import { PatientTabBar } from "@/atomic/organisms/PatientTabBar";
+import { PatientExtrasTabBar } from "@/atomic/organisms/PatientExtrasTabBar";
 import { ScreenTopBar } from "@/atomic/organisms/ScreenTopBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen } from "@/navigation/screenRouter";
@@ -372,7 +372,7 @@ export function PCitasPage() {
 
   return (
     <MobileScreen
-      tabBar={<PatientTabBar active={2} />}
+      tabBar={<PatientExtrasTabBar activeScreen="pat-citas" />}
       header={<Header />}
       contentStyle={styles.content}
     >
