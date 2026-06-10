@@ -11,3 +11,4 @@ class VerificationStatusResponse(BaseModel):
     expires_at: datetime
     next_resend_at: datetime
     attempts_in_window: int
+    debug_code: str | None = None

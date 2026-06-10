@@ -209,7 +209,8 @@ export function RegPatientMobilePage() {
         email,
         expiresAt: status.expires_at,
         nextResendAt: status.next_resend_at,
-        attemptsInWindow: status.attempts_in_window
+        attemptsInWindow: status.attempts_in_window,
+        debugCode: status.debug_code ?? null
       });
       goToScreen("verify-email-mob");
     } catch (err) {

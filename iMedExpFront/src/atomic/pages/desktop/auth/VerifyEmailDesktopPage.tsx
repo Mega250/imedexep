@@ -69,6 +69,7 @@ export function VerifyEmailDesktopPage() {
   const cooldownRemainingMs = useCountdown(status?.nextResendAt);
   const codeExpired = !!status && codeRemainingMs === 0;
   const canResend = !resending && !!email && cooldownRemainingMs === 0;
+  const usingLocalCode = !!status?.debugCode;
 
   const digits = code.padEnd(6, " ").slice(0, 6).split("");
   const activeIndex = Math.min(code.length, 5);
@@ -109,7 +110,8 @@ export function VerifyEmailDesktopPage() {
         email,
         expiresAt: fresh.expires_at,
         nextResendAt: fresh.next_resend_at,
-        attemptsInWindow: fresh.attempts_in_window
+        attemptsInWindow: fresh.attempts_in_window,
+        debugCode: fresh.debug_code ?? null
       };
       setStatus(next);
       await setPendingVerifyStatus(next);
@@ -169,7 +171,7 @@ export function VerifyEmailDesktopPage() {
                 <Icon kind="mail" size={18} color={colors.accentDeep} />
               </View>
               <View style={styles.flex}>
-                <Text style={styles.emailLabel}>Te enviamos un código a</Text>
+                <Text style={styles.emailLabel}>{usingLocalCode ? "Correo apagado · código local para" : "Te enviamos un código a"}</Text>
                 <Text style={styles.emailValue}>{email || "tu correo"}</Text>
               </View>
             </View>
@@ -251,6 +253,12 @@ export function VerifyEmailDesktopPage() {
             </View>
 
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            {status?.debugCode ? (
+              <View style={styles.devCodeCard}>
+                <Text style={styles.devCodeLabel}>Código local</Text>
+                <Text style={styles.devCodeValue}>{status.debugCode}</Text>
+              </View>
+            ) : null}
 
             <Button
               label={busy ? "Procesando…" : "Verificar y entrar  →"}
@@ -262,7 +270,7 @@ export function VerifyEmailDesktopPage() {
 
             <View style={styles.resendCard}>
               <View style={styles.flex}>
-                <Text style={styles.resendTitle}>¿No te llegó el correo?</Text>
+                <Text style={styles.resendTitle}>{usingLocalCode ? "Modo desarrollo" : "¿No te llegó el correo?"}</Text>
                 <Text style={styles.resendMeta}>
                   {resending
                     ? "Reenviando…"
@@ -270,6 +278,8 @@ export function VerifyEmailDesktopPage() {
                     ? `Espera ${formatRemaining(cooldownRemainingMs)} para reenviar`
                     : resent
                     ? "Código reenviado"
+                    : usingLocalCode
+                    ? "Genera otro código local"
                     : "Podemos reenviarlo"}
                 </Text>
               </View>
@@ -491,6 +501,28 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.alert,
     marginTop: 16
+  },
+  devCodeCard: {
+    alignItems: "center",
+    backgroundColor: colors.paper,
+    borderColor: colors.accentRule,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    marginTop: 14,
+    padding: 14
+  },
+  devCodeLabel: {
+    ...text.eyebrow,
+    color: colors.ink3,
+    fontSize: 10
+  },
+  devCodeValue: {
+    color: colors.accentDeep,
+    fontFamily: family.mono,
+    fontSize: 24,
+    fontWeight: "700",
+    letterSpacing: 4,
+    marginTop: 4
   },
   resendCard: {
     flexDirection: "row",

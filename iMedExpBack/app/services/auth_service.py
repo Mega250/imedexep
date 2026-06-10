@@ -29,6 +29,16 @@ class AuthService:
     def __init__(self, session: AsyncSession) -> None:
         self.session = session
 
+    def _verification_debug_code(self, code: str) -> str | None:
+        if settings.app_env in {"development", "testing"} and not settings.mail_enabled:
+            return code
+        return None
+
+    def _verification_message(self) -> str:
+        if settings.app_env in {"development", "testing"} and not settings.mail_enabled:
+            return "Correo deshabilitado en desarrollo; usa el código local"
+        return "Código de verificación enviado a tu correo"
+
     async def login(self, email: str, password: str) -> TokenResponse:
 
         user = await self._get_active_user_by_email(email)
@@ -241,10 +251,11 @@ class AuthService:
             raise
 
         return {
-            "message": "Código de verificación enviado a tu correo",
+            "message": self._verification_message(),
             "expires_at": expires_at,
             "next_resend_at": status.next_resend_at,
             "attempts_in_window": status.attempts_in_window,
+            "debug_code": self._verification_debug_code(code),
         }
 
     async def resend_code(self, email: str) -> dict:
@@ -280,6 +291,7 @@ class AuthService:
                     "expires_at": expires_at,
                     "next_resend_at": fresh_status.next_resend_at,
                     "attempts_in_window": fresh_status.attempts_in_window,
+                    "debug_code": self._verification_debug_code(code),
                 }
             except Exception:
                 return default_response
@@ -649,10 +661,11 @@ class AuthService:
             raise Exception(f"Error interno al registrar doctor: {str(e)}")
 
         return {
-            "message": "Código de verificación enviado a tu correo",
+            "message": self._verification_message(),
             "expires_at": expires_at,
             "next_resend_at": status.next_resend_at,
             "attempts_in_window": status.attempts_in_window,
+            "debug_code": self._verification_debug_code(code),
         }
 
     async def _doctor_license_exists(self, general_license: str) -> bool:
