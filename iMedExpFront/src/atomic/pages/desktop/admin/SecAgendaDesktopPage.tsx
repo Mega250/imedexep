@@ -5,17 +5,19 @@ import { Button } from "@/atomic/atoms/Button";
 import { FadeIn } from "@/atomic/atoms/FadeIn";
 import { Icon } from "@/atomic/atoms/Icon";
 import { Tappable } from "@/atomic/atoms/Tappable";
+import { DatePickerField } from "@/atomic/molecules/DatePickerField";
 import { DesktopShell } from "@/atomic/templates/DesktopShell";
 import { secretaryNav } from "@/navigation/desktopNavConfigs";
 import { goToScreen } from "@/navigation/screenRouter";
 import { Appointment, AppointmentStatus, fetchAppointments, postAppointment } from "@/services/api/appointmentsApi";
 import { Doctor } from "@/services/api/doctorsApi";
-import { Patient, fetchPatientsList } from "@/services/api/patientsApi";
+import { Patient, fetchPatientsList, createPatientAuthed } from "@/services/api/patientsApi";
 import { fetchInstitutionDoctors } from "@/services/api/secretaryApi";
 import { silentOrEmpty } from "@/services/api/silent";
 import { loadSession } from "@/state/sessionStore";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
+import { validateCurp } from "@/utils/validators";
 import { apptWallDate, formatApptTime } from "@/utils/dates";
 
 const DOCTOR_COLORS = [colors.accentDeep, colors.mid, colors.ok, colors.accent, colors.ink3];
@@ -109,6 +111,23 @@ export function SecAgendaDesktopPage() {
   const [createReason, setCreateReason] = useState("");
   const [creating, setCreating] = useState(false);
   const [createMessage, setCreateMessage] = useState<string | null>(null);
+  const [isNewPatient, setIsNewPatient] = useState(false);
+  const [newFirstName, setNewFirstName] = useState("");
+  const [newLastName, setNewLastName] = useState("");
+  const [newCurp, setNewCurp] = useState("");
+  const [newDob, setNewDob] = useState("");
+  const [newPhone, setNewPhone] = useState("");
+
+  function parseDob(value: string): string | null {
+    const match = value.trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+    if (!match) return null;
+    const [, dd, mm, yyyy] = match;
+    const d = new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+    if (d.getFullYear() !== Number(yyyy) || d.getMonth() !== Number(mm) - 1 || d.getDate() !== Number(dd)) return null;
+    if (d >= new Date()) return null;
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
   const [weekAnchor, setWeekAnchor] = useState(() => new Date());
 
   useEffect(() => {
@@ -196,16 +215,27 @@ export function SecAgendaDesktopPage() {
   }
 
   async function handleCreateAppointment() {
-    const patientId = createPatientId ?? patients[0]?.id ?? null;
     const doctorId = createDoctorId ?? doctors[0]?.id ?? null;
-    if (!patientId) {
-      setCreateMessage("Primero vincula o crea un paciente de la clínica.");
-      return;
-    }
     if (!doctorId) {
       setCreateMessage("No hay médicos disponibles para agendar.");
       return;
     }
+
+    let patientId: number | null = null;
+    if (isNewPatient) {
+      if (!newFirstName.trim()) { setCreateMessage("Ingresa el nombre del paciente."); return; }
+      if (!newLastName.trim()) { setCreateMessage("Ingresa el apellido del paciente."); return; }
+      const curpErr = validateCurp(newCurp);
+      if (curpErr) { setCreateMessage(curpErr); return; }
+      if (!parseDob(newDob)) { setCreateMessage("Fecha de nacimiento inválida. Usa dd/mm/aaaa."); return; }
+    } else {
+      patientId = createPatientId ?? patients[0]?.id ?? null;
+      if (!patientId) {
+        setCreateMessage("Selecciona un paciente o usa 'No registrado'.");
+        return;
+      }
+    }
+
     const [hh, mm] = createHour.split(":").map(Number);
     if (!Number.isFinite(hh) || !Number.isFinite(mm)) {
       setCreateMessage("La hora debe tener formato HH:MM.");
@@ -220,10 +250,23 @@ export function SecAgendaDesktopPage() {
     setCreating(true);
     setCreateMessage(null);
     try {
+      if (isNewPatient) {
+        const dobIso = parseDob(newDob)!;
+        const newPatient = await createPatientAuthed({
+          curp: newCurp.trim().toUpperCase(),
+          first_name: newFirstName.trim(),
+          last_name: newLastName.trim(),
+          date_of_birth: dobIso,
+          phone: newPhone.trim() || undefined
+        });
+        patientId = newPatient.id;
+        setPatients((curr) => [...curr, newPatient]);
+      }
+
       const session = await loadSession();
       const doctor = doctorMap.get(doctorId);
       const created = await postAppointment({
-        patient_id: patientId,
+        patient_id: patientId!,
         doctor_id: doctorId,
         institution_id: session.user?.institution_id ?? doctor?.institution_id ?? null,
         scheduled_at: `${scheduled.getFullYear()}-${pad(scheduled.getMonth() + 1)}-${pad(scheduled.getDate())}T${pad(hh)}:${pad(mm)}:00`,
@@ -233,6 +276,12 @@ export function SecAgendaDesktopPage() {
       setCreateMessage("Cita creada y visible en la agenda.");
       setShowCreate(false);
       setCreateReason("");
+      setIsNewPatient(false);
+      setNewFirstName("");
+      setNewLastName("");
+      setNewCurp("");
+      setNewDob("");
+      setNewPhone("");
     } catch (err) {
       setCreateMessage(err instanceof Error ? err.message : "No pudimos crear la cita.");
     } finally {
@@ -336,21 +385,90 @@ export function SecAgendaDesktopPage() {
           <View style={styles.createGrid}>
             <View style={styles.createFieldWide}>
               <Text style={styles.createLabel}>Paciente</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
-                {patients.length === 0 ? <Text style={styles.createHint}>Sin pacientes vinculados.</Text> : null}
-                {patients.slice(0, 10).map((p) => {
-                  const on = (createPatientId ?? patients[0]?.id) === p.id;
-                  return (
-                    <Tappable key={p.id} onPress={() => setCreatePatientId(p.id)} scaleTo={0.96}>
-                      <View style={[styles.choicePill, on && styles.choicePillOn]}>
-                        <Text style={[styles.choiceText, on && styles.choiceTextOn]}>
-                          {`${p.first_name} ${p.last_name}`.trim()}
-                        </Text>
-                      </View>
-                    </Tappable>
-                  );
-                })}
-              </ScrollView>
+              <View style={styles.patientModeRow}>
+                <Tappable
+                  onPress={() => setIsNewPatient(false)}
+                  scaleTo={0.96}
+                  style={[styles.patientModeTab, !isNewPatient && styles.patientModeTabOn]}
+                >
+                  <Text style={[styles.patientModeText, !isNewPatient && styles.patientModeTextOn]}>Registrado</Text>
+                </Tappable>
+                <Tappable
+                  onPress={() => setIsNewPatient(true)}
+                  scaleTo={0.96}
+                  style={[styles.patientModeTab, isNewPatient && styles.patientModeTabOn]}
+                >
+                  <Text style={[styles.patientModeText, isNewPatient && styles.patientModeTextOn]}>No registrado</Text>
+                </Tappable>
+              </View>
+              {!isNewPatient ? (
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.choiceRow}>
+                  {patients.length === 0 ? <Text style={styles.createHint}>Sin pacientes vinculados.</Text> : null}
+                  {patients.slice(0, 10).map((p) => {
+                    const on = (createPatientId ?? patients[0]?.id) === p.id;
+                    return (
+                      <Tappable key={p.id} onPress={() => setCreatePatientId(p.id)} scaleTo={0.96}>
+                        <View style={[styles.choicePill, on && styles.choicePillOn]}>
+                          <Text style={[styles.choiceText, on && styles.choiceTextOn]}>
+                            {`${p.first_name} ${p.last_name}`.trim()}
+                          </Text>
+                        </View>
+                      </Tappable>
+                    );
+                  })}
+                </ScrollView>
+              ) : (
+                <View style={styles.newPatientFields}>
+                  <View style={styles.newPatientRow}>
+                    <View style={styles.newPatientField}>
+                      <Text style={styles.newPatientLabel}>Nombre *</Text>
+                      <TextInput value={newFirstName} onChangeText={setNewFirstName} placeholder="Nombre(s)" placeholderTextColor={colors.ink3} style={styles.input} />
+                    </View>
+                    <View style={styles.newPatientField}>
+                      <Text style={styles.newPatientLabel}>Apellido *</Text>
+                      <TextInput value={newLastName} onChangeText={setNewLastName} placeholder="Apellido(s)" placeholderTextColor={colors.ink3} style={styles.input} />
+                    </View>
+                    <View style={styles.newPatientField}>
+                      <Text style={styles.newPatientLabel}>CURP *</Text>
+                      <TextInput
+                        value={newCurp}
+                        onChangeText={(v) => setNewCurp(v.toUpperCase())}
+                        placeholder="18 caracteres"
+                        placeholderTextColor={colors.ink3}
+                        maxLength={18}
+                        autoCapitalize="characters"
+                        style={[
+                          styles.input,
+                          newCurp.trim().length > 0 && validateCurp(newCurp)
+                            ? { borderColor: colors.alert }
+                            : newCurp.trim().length === 18 && !validateCurp(newCurp)
+                              ? { borderColor: colors.ok }
+                              : null
+                        ]}
+                      />
+                      {newCurp.trim().length > 0 && validateCurp(newCurp) ? (
+                        <Text style={styles.curpError}>{validateCurp(newCurp)}</Text>
+                      ) : null}
+                    </View>
+                  </View>
+                  <View style={styles.newPatientRow}>
+                    <DatePickerField
+                      label="Nacimiento *"
+                      placeholder="dd/mm/aaaa"
+                      value={newDob}
+                      onChange={setNewDob}
+                      style={styles.newPatientField}
+                      valid={!!newDob.trim() && !!parseDob(newDob)}
+                      errorText={newDob.trim() && !parseDob(newDob) ? "Fecha inválida" : null}
+                    />
+                    <View style={styles.newPatientField}>
+                      <Text style={styles.newPatientLabel}>Teléfono</Text>
+                      <TextInput value={newPhone} onChangeText={setNewPhone} placeholder="Opcional" placeholderTextColor={colors.ink3} keyboardType="phone-pad" style={styles.input} />
+                    </View>
+                  </View>
+                  <Text style={styles.newPatientHint}>Se creará un registro básico. El paciente podrá completar su perfil después.</Text>
+                </View>
+              )}
             </View>
             <View style={styles.createFieldWide}>
               <Text style={styles.createLabel}>Médico</Text>
@@ -691,6 +809,64 @@ const styles = StyleSheet.create({
   reasonInput: {
     minHeight: 64,
     textAlignVertical: "top"
+  },
+  patientModeRow: {
+    flexDirection: "row",
+    gap: 6,
+    marginBottom: 10
+  },
+  patientModeTab: {
+    flex: 1,
+    maxWidth: 160,
+    alignItems: "center",
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: colors.rule,
+    borderRadius: radii.md,
+    backgroundColor: colors.white
+  },
+  patientModeTabOn: {
+    borderColor: colors.ink,
+    backgroundColor: colors.ink
+  },
+  patientModeText: {
+    fontFamily: family.medium,
+    fontSize: 11.5,
+    color: colors.ink2
+  },
+  patientModeTextOn: {
+    color: colors.paper
+  },
+  newPatientFields: {
+    gap: 4
+  },
+  newPatientRow: {
+    flexDirection: "row",
+    gap: 10
+  },
+  newPatientField: {
+    flex: 1
+  },
+  newPatientLabel: {
+    fontFamily: family.mono,
+    fontSize: 10,
+    color: colors.ink3,
+    letterSpacing: 0.5,
+    marginTop: 6,
+    marginBottom: 4
+  },
+  curpError: {
+    fontFamily: family.mono,
+    fontSize: 10,
+    color: colors.alert,
+    marginTop: 3
+  },
+  newPatientHint: {
+    fontFamily: family.mono,
+    fontSize: 10,
+    color: colors.ink3,
+    marginTop: 8,
+    lineHeight: 15
   },
   createMessage: {
     fontFamily: family.mono,

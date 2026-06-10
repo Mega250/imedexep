@@ -29,6 +29,7 @@ import { SecPatientsMobilePage } from "@/atomic/pages/admin/SecPatientsMobilePag
 import { SecProfileMobilePage } from "@/atomic/pages/admin/SecProfileMobilePage";
 import { SecReceptionMobilePage } from "@/atomic/pages/admin/SecReceptionMobilePage";
 import { DashboardMobilePage } from "@/atomic/pages/doctor/DashboardMobilePage";
+import { DocAgendarMobilePage } from "@/atomic/pages/doctor/DocAgendarMobilePage";
 import { DocBitacoraMobilePage } from "@/atomic/pages/doctor/DocBitacoraMobilePage";
 import { DocInvitesMobilePage } from "@/atomic/pages/doctor/DocInvitesMobilePage";
 import { DocPatientFullMobilePage } from "@/atomic/pages/doctor/DocPatientFullMobilePage";
@@ -92,6 +93,7 @@ export const nativeScreens: Record<string, ComponentType> = {
   "pat-meds": PMedicamentosPage,
   "pat-perfil": PPerfilPage,
   "dash-mob": DashboardMobilePage,
+  "doc-agendar-mob": DocAgendarMobilePage,
   "active-mob": DoctorActiveMobilePage,
   "consulta-registro": MConsultaRegistroPage,
   "consulta-detalle": MConsultaDetallePage,

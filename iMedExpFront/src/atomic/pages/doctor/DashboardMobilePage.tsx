@@ -9,6 +9,8 @@ import { RoundIconButton } from "@/atomic/atoms/RoundIconButton";
 import { SectionLabel } from "@/atomic/atoms/SectionLabel";
 import { Tappable } from "@/atomic/atoms/Tappable";
 import { DarkPanel } from "@/atomic/molecules/DarkPanel";
+import { FAB } from "@/atomic/molecules/FAB";
+import { QuickAppointmentModal } from "@/atomic/molecules/QuickAppointmentModal";
 import { DoctorTabBar } from "@/atomic/organisms/DoctorTabBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goToScreen } from "@/navigation/screenRouter";
@@ -133,6 +135,7 @@ export function DashboardMobilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [quickModal, setQuickModal] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -195,6 +198,7 @@ export function DashboardMobilePage() {
           onCloseMenu={() => setMenuOpen(false)}
         />
       }
+      floating={<FAB icon="cal" label="Agendar cita" onPress={() => goToScreen("doc-agendar-mob")} />}
       contentStyle={styles.content}
     >
       <FadeIn>
@@ -269,6 +273,23 @@ export function DashboardMobilePage() {
         </DarkPanel>
       </FadeIn>
 
+      <FadeIn delay={130}>
+        <Tappable
+          onPress={() => setQuickModal(true)}
+          scaleTo={0.97}
+          style={styles.urgBtn}
+        >
+          <View style={styles.urgIcon}>
+            <Icon kind="alert" size={14} color={colors.alert} />
+          </View>
+          <View style={styles.flex}>
+            <Text style={styles.urgLabel}>Cita rápida</Text>
+            <Text style={styles.urgSub}>Urgencia · agendar ahora</Text>
+          </View>
+          <Icon kind="chev" size={13} color={colors.ink3} />
+        </Tappable>
+      </FadeIn>
+
       <FadeIn delay={150}>
         <View style={styles.statRow}>
           {STATS.map(([n, l]) => (
@@ -315,6 +336,22 @@ export function DashboardMobilePage() {
           )}
         </View>
       </FadeIn>
+
+      {doctor ? (
+        <QuickAppointmentModal
+          visible={quickModal}
+          doctorId={doctor.id}
+          institutionId={doctor.institution_id ?? null}
+          role="doctor"
+          onClose={() => setQuickModal(false)}
+          onCreated={() => {
+            setQuickModal(false);
+            goToScreen("dash-mob");
+          }}
+          onStartConsultation={() => goToScreen("active-mob")}
+          onViewAgenda={() => goToScreen("mob-agenda")}
+        />
+      ) : null}
     </MobileScreen>
   );
 }
@@ -477,6 +514,37 @@ const styles = StyleSheet.create({
     borderColor: "rgba(255,255,255,0.18)",
     alignItems: "center",
     justifyContent: "center"
+  },
+  urgBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 11,
+    borderRadius: radii.md,
+    backgroundColor: colors.alertSoft,
+    borderWidth: 1,
+    borderColor: colors.alertRule
+  },
+  urgIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    backgroundColor: colors.white,
+    alignItems: "center",
+    justifyContent: "center"
+  },
+  urgLabel: {
+    fontFamily: family.medium,
+    fontSize: 13,
+    color: colors.ink
+  },
+  urgSub: {
+    fontFamily: family.mono,
+    fontSize: 9.5,
+    color: colors.alert,
+    marginTop: 1
   },
   statRow: {
     flexDirection: "row",

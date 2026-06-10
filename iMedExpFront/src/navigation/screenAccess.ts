@@ -104,6 +104,8 @@ const DOCTOR_SCREENS = new Set<string>([
   "doc-qr",
   "doc-vitals",
   "doc-full",
+  "doc-agendar-mob",
+  "dsk-doc-agendar",
   "bitacora-mob",
   "bitacora-pc",
   "bitacora-print",

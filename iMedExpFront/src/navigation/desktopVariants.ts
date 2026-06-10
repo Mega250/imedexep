@@ -24,6 +24,7 @@ const MOBILE_TO_DESKTOP: Record<string, string> = {
   "pat-meds": "pd-meds",
   "pat-perfil": "pd-perfil",
   "dash-mob": "doctor-dash",
+  "doc-agendar-mob": "dsk-doc-agendar",
   "active-mob": "doctor-active",
   "consulta-registro": "dsk-consulta-registro",
   "consulta-detalle": "dsk-consulta-detalle",
