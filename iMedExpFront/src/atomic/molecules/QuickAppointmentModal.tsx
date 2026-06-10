@@ -26,7 +26,7 @@ type Step = "curp" | "new" | "confirm" | "done";
 function nowIso(): string {
   const d = new Date();
   d.setMinutes(d.getMinutes() + 30);
-  return d.toISOString().slice(0, 19);
+  return d.toISOString();
 }
 
 function parseDob(value: string): string | null {

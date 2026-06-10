@@ -22,6 +22,7 @@ import { validateCurp } from "@/utils/validators";
 import { formatApptTime } from "@/utils/dates";
 
 const DOCTOR_COLORS = [colors.accentDeep, colors.mid, colors.ok, colors.accent, colors.ink3];
+const HOURS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "16:00", "16:30", "17:00"];
 
 function startOfWeek(d: Date): Date {
   const x = new Date(d);
@@ -44,10 +45,6 @@ function isSameDay(a: Date, b: Date): boolean {
     a.getMonth() === b.getMonth() &&
     a.getDate() === b.getDate()
   );
-}
-
-function pad(n: number): string {
-  return String(n).padStart(2, "0");
 }
 
 function HeaderBlock({
@@ -229,6 +226,24 @@ export function SecAgendaMobilePage() {
   ];
 
   const selDay = weekDays[selectedIdx];
+
+  const createBookedHours = useMemo(() => {
+    const doctorId = createDoctorId ?? doctors[0]?.id ?? null;
+    if (!doctorId) return new Set<string>();
+    const set = new Set<string>();
+    for (const a of appointments) {
+      if (a.status === "cancelled" || a.status === "no_show") continue;
+      if (a.doctor_id !== doctorId) continue;
+      const d = new Date(a.scheduled_at);
+      if (isSameDay(d, selDay)) {
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        set.add(`${hh}:${mm}`);
+      }
+    }
+    return set;
+  }, [appointments, createDoctorId, doctors, selDay]);
+
   const dayAppts = appointments
     .filter((a) => isSameDay(new Date(a.scheduled_at), selDay))
     .filter((a) => selectedDoctor === null || a.doctor_id === selectedDoctor)
@@ -301,7 +316,7 @@ export function SecAgendaMobilePage() {
         patient_id: patientId!,
         doctor_id: doctorId,
         institution_id: session.user?.institution_id ?? doctor?.institution_id ?? null,
-        scheduled_at: `${scheduled.getFullYear()}-${pad(scheduled.getMonth() + 1)}-${pad(scheduled.getDate())}T${pad(hh)}:${pad(mm)}:00`,
+        scheduled_at: scheduled.toISOString(),
         reason: createReason.trim() || "Consulta desde recepción"
       });
       setAppointments((curr) => [...curr, created]);
@@ -460,7 +475,25 @@ export function SecAgendaMobilePage() {
             })}
           </ScrollView>
           <Text style={styles.createLabel}>Hora</Text>
-          <TextInput value={createHour} onChangeText={setCreateHour} placeholder="10:00" placeholderTextColor={colors.ink3} style={styles.input} />
+          <View style={styles.hourGrid}>
+            {HOURS.map((h) => {
+              const sel = createHour === h;
+              const isBooked = createBookedHours.has(h);
+              const isPast = isSameDay(selDay, new Date()) && (() => {
+                const [hh, mm] = h.split(":").map(Number);
+                return new Date(selDay.getFullYear(), selDay.getMonth(), selDay.getDate(), hh, mm).getTime() <= Date.now();
+              })();
+              const off = isBooked || isPast;
+              return (
+                <Tappable key={h} onPress={() => setCreateHour(h)} scaleTo={0.95} style={styles.hourTap} disabled={off}>
+                  <View style={[styles.hourBtn, { backgroundColor: sel ? colors.ink : isBooked ? colors.paper2 : colors.white, borderColor: sel ? colors.ink : isBooked ? colors.rule2 : colors.rule, opacity: isPast ? 0.35 : 1 }]}>
+                    <Text style={[styles.hourText, { color: sel ? colors.paper : off ? colors.ink4 : colors.ink }]}>{h}</Text>
+                    {isBooked ? <Text style={styles.bookedLabel}>ocupado</Text> : null}
+                  </View>
+                </Tappable>
+              );
+            })}
+          </View>
           <Text style={styles.createLabel}>Motivo</Text>
           <TextInput
             value={createReason}
@@ -616,6 +649,34 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.ink3,
     paddingVertical: 8
+  },
+  hourGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6
+  },
+  hourTap: {
+    flexGrow: 1,
+    flexBasis: "22%",
+    minWidth: 64
+  },
+  hourBtn: {
+    width: "100%",
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  hourText: {
+    fontFamily: family.mono,
+    fontSize: 11
+  },
+  bookedLabel: {
+    fontFamily: family.mono,
+    fontSize: 7.5,
+    color: colors.ink4,
+    letterSpacing: 0.3,
+    marginTop: 1
   },
   input: {
     minHeight: 40,

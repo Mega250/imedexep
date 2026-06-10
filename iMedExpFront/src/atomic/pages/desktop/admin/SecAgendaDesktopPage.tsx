@@ -21,7 +21,8 @@ import { validateCurp } from "@/utils/validators";
 import { apptWallDate, formatApptTime } from "@/utils/dates";
 
 const DOCTOR_COLORS = [colors.accentDeep, colors.mid, colors.ok, colors.accent, colors.ink3];
-const HOURS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const GRID_HOURS = ["08:00", "09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"];
+const CREATE_HOURS = ["08:00", "08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00", "16:00", "16:30", "17:00"];
 const ROW = 56;
 const DAY_LABELS = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"];
 const HOUR_GUTTER = 64;
@@ -83,10 +84,6 @@ function formatTitle(start: Date, end: Date): string {
     return `Agenda · ${start.getDate()} — ${end.getDate()} ${months[start.getMonth()].slice(0, 3)} ${start.getFullYear()}`;
   }
   return `Agenda · ${start.getDate()} ${months[start.getMonth()].slice(0, 3)} — ${end.getDate()} ${months[end.getMonth()].slice(0, 3)} ${end.getFullYear()}`;
-}
-
-function pad(n: number): string {
-  return String(n).padStart(2, "0");
 }
 
 export function SecAgendaDesktopPage() {
@@ -169,6 +166,24 @@ export function SecAgendaDesktopPage() {
     doctors.forEach((d, i) => m.set(d.id, DOCTOR_COLORS[i % DOCTOR_COLORS.length]));
     return m;
   }, [doctors]);
+
+  const createBookedHours = useMemo(() => {
+    const doctorId = createDoctorId ?? doctors[0]?.id ?? null;
+    if (!doctorId) return new Set<string>();
+    const day = weekDays[createDayIdx] ?? today;
+    const set = new Set<string>();
+    for (const a of appointments) {
+      if (a.status === "cancelled" || a.status === "no_show") continue;
+      if (a.doctor_id !== doctorId) continue;
+      const d = new Date(a.scheduled_at);
+      if (isSameDay(d, day)) {
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        set.add(`${hh}:${mm}`);
+      }
+    }
+    return set;
+  }, [appointments, createDoctorId, doctors, weekDays, createDayIdx, today]);
 
   const weekAppts = useMemo(() => {
     return appointments.filter((a) => {
@@ -269,7 +284,7 @@ export function SecAgendaDesktopPage() {
         patient_id: patientId!,
         doctor_id: doctorId,
         institution_id: session.user?.institution_id ?? doctor?.institution_id ?? null,
-        scheduled_at: `${scheduled.getFullYear()}-${pad(scheduled.getMonth() + 1)}-${pad(scheduled.getDate())}T${pad(hh)}:${pad(mm)}:00`,
+        scheduled_at: scheduled.toISOString(),
         reason: createReason.trim() || "Consulta desde recepción"
       });
       setAppointments((curr) => [...curr, created]);
@@ -503,15 +518,28 @@ export function SecAgendaDesktopPage() {
                 })}
               </View>
             </View>
-            <View style={styles.createField}>
+            <View style={styles.createFieldWide}>
               <Text style={styles.createLabel}>Hora</Text>
-              <TextInput
-                value={createHour}
-                onChangeText={setCreateHour}
-                placeholder="10:00"
-                placeholderTextColor={colors.ink3}
-                style={styles.input}
-              />
+              <View style={styles.hourGrid}>
+                {CREATE_HOURS.map((h) => {
+                  const sel = createHour === h;
+                  const isBooked = createBookedHours.has(h);
+                  const day = weekDays[createDayIdx] ?? today;
+                  const isPast = isSameDay(day, today) && (() => {
+                    const [hh, mm] = h.split(":").map(Number);
+                    return new Date(day.getFullYear(), day.getMonth(), day.getDate(), hh, mm).getTime() <= Date.now();
+                  })();
+                  const off = isBooked || isPast;
+                  return (
+                    <Tappable key={h} onPress={() => setCreateHour(h)} scaleTo={0.95} style={styles.hourTap} disabled={off}>
+                      <View style={[styles.hourBtn, { backgroundColor: sel ? colors.ink : isBooked ? colors.paper2 : colors.white, borderColor: sel ? colors.ink : isBooked ? colors.rule2 : colors.rule, opacity: isPast ? 0.35 : 1 }]}>
+                        <Text style={[styles.hourText, { color: sel ? colors.paper : off ? colors.ink4 : colors.ink }]}>{h}</Text>
+                        {isBooked ? <Text style={styles.bookedLabel}>ocupado</Text> : null}
+                      </View>
+                    </Tappable>
+                  );
+                })}
+              </View>
             </View>
             <View style={styles.createFieldWide}>
               <Text style={styles.createLabel}>Motivo</Text>
@@ -561,7 +589,7 @@ export function SecAgendaDesktopPage() {
 
           <View style={styles.gridBody}>
             <View style={styles.hourColumn}>
-              {HOURS.map((h, i) => (
+              {GRID_HOURS.map((h, i) => (
                 <View key={h} style={[styles.hourCell, i > 0 && styles.hourCellBorder]}>
                   <Text style={styles.hourText}>{h}</Text>
                 </View>
@@ -578,7 +606,7 @@ export function SecAgendaDesktopPage() {
                     { backgroundColor: isToday ? colors.paper3 : "transparent" }
                   ]}
                 >
-                  {HOURS.map((h, i) => (
+                  {GRID_HOURS.map((h, i) => (
                     <View key={h} style={[styles.slotCell, i > 0 && styles.slotCellBorder]} />
                   ))}
                   {colAppts.map((a) => {
@@ -793,6 +821,34 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: colors.ink3,
     paddingVertical: 8
+  },
+  hourGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6
+  },
+  hourTap: {
+    flexGrow: 1,
+    flexBasis: "12%",
+    minWidth: 64
+  },
+  hourBtn: {
+    width: "100%",
+    paddingVertical: 9,
+    borderWidth: 1,
+    borderRadius: 8,
+    alignItems: "center"
+  },
+  hourText: {
+    fontFamily: family.mono,
+    fontSize: 11
+  },
+  bookedLabel: {
+    fontFamily: family.mono,
+    fontSize: 7.5,
+    color: colors.ink4,
+    letterSpacing: 0.3,
+    marginTop: 1
   },
   input: {
     minHeight: 40,

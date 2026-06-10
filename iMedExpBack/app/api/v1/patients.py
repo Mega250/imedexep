@@ -55,7 +55,7 @@ async def get_my_full_profile(
 async def get_patient_by_curp(
     curp: str,
     token: TokenPayload = Depends(
-        require_roles("secretary", "institution_admin", "superadmin")
+        require_roles("doctor", "secretary", "institution_admin", "superadmin")
     ),
     session: AsyncSession = Depends(get_rls_session),
 ):

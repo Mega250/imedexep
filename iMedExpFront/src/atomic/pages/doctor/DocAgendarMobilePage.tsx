@@ -11,7 +11,7 @@ import { DatePickerField } from "@/atomic/molecules/DatePickerField";
 import { DoctorTabBar } from "@/atomic/organisms/DoctorTabBar";
 import { MobileScreen } from "@/atomic/templates/MobileScreen";
 import { goBack } from "@/navigation/screenRouter";
-import { fetchAppointments, postAppointment } from "@/services/api/appointmentsApi";
+import { Appointment, fetchAppointments, postAppointment } from "@/services/api/appointmentsApi";
 import { getCurrentDoctorId } from "@/services/api/currentDoctor";
 import { Doctor, fetchDoctor } from "@/services/api/doctorsApi";
 import { Patient, fetchPatientsList, createPatientAuthed } from "@/services/api/patientsApi";
@@ -39,10 +39,6 @@ function buildCurrentMonthDays(): { offset: number; total: number; year: number;
   return { offset, total: lastDay.getDate(), year, month };
 }
 
-function pad(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
 type NewPatientDraft = {
   first_name: string;
   last_name: string;
@@ -63,6 +59,7 @@ export function DocAgendarMobilePage() {
   const [type, setType] = useState(1);
   const [doctorId, setDoctorId] = useState<number | null>(null);
   const [doctor, setDoctor] = useState<Doctor | null>(null);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [patientSearch, setPatientSearch] = useState("");
@@ -117,7 +114,9 @@ export function DocAgendarMobilePage() {
           setDoctor(doc);
           const allPatients = patientsList.items ?? [];
           setPatients(allPatients);
-          const last = (apptList.items ?? []).sort(
+          const allAppts = apptList.items ?? [];
+          setAppointments(allAppts);
+          const last = allAppts.sort(
             (a, b) => new Date(b.scheduled_at).getTime() - new Date(a.scheduled_at).getTime()
           )[0];
           const preferred =
@@ -136,6 +135,20 @@ export function DocAgendarMobilePage() {
       cancelled = true;
     };
   }, []);
+
+  const bookedHours = useMemo(() => {
+    const set = new Set<string>();
+    for (const a of appointments) {
+      if (a.status === "cancelled" || a.status === "no_show") continue;
+      const d = new Date(a.scheduled_at);
+      if (d.getFullYear() === month.year && d.getMonth() === month.month && d.getDate() === selectedDay) {
+        const hh = String(d.getHours()).padStart(2, "0");
+        const mm = String(d.getMinutes()).padStart(2, "0");
+        set.add(`${hh}:${mm}`);
+      }
+    }
+    return set;
+  }, [appointments, selectedDay, month.year, month.month]);
 
   const filteredPatients = useMemo(() => {
     if (!patientSearch.trim()) return patients;
@@ -225,7 +238,7 @@ export function DocAgendarMobilePage() {
         patientId = selectedPatient!.id;
       }
 
-      const scheduled_at = `${scheduled.getFullYear()}-${pad(scheduled.getMonth() + 1)}-${pad(scheduled.getDate())}T${pad(hh)}:${pad(mm)}:00`;
+      const scheduled_at = scheduled.toISOString();
       await postAppointment({
         patient_id: patientId,
         doctor_id: doctorId,
@@ -593,20 +606,22 @@ export function DocAgendarMobilePage() {
                       Date.now()
                     );
                   })();
+                const isBooked = bookedHours.has(h);
+                const disabled = isPastHour || isBooked;
                 return (
                   <Tappable
                     key={h}
                     onPress={() => setSelectedHour(h)}
                     scaleTo={0.95}
                     style={styles.hourTap}
-                    disabled={isPastHour}
+                    disabled={disabled}
                   >
                     <View
                       style={[
                         styles.hourBtn,
                         {
-                          backgroundColor: sel ? colors.ink : colors.white,
-                          borderColor: sel ? colors.ink : colors.rule,
+                          backgroundColor: sel ? colors.ink : isBooked ? colors.paper2 : colors.white,
+                          borderColor: sel ? colors.ink : isBooked ? colors.rule2 : colors.rule,
                           opacity: isPastHour ? 0.35 : 1
                         }
                       ]}
@@ -614,11 +629,12 @@ export function DocAgendarMobilePage() {
                       <Text
                         style={[
                           styles.hourText,
-                          { color: sel ? colors.paper : isPastHour ? colors.ink4 : colors.ink }
+                          { color: sel ? colors.paper : disabled ? colors.ink4 : colors.ink }
                         ]}
                       >
                         {h}
                       </Text>
+                      {isBooked ? <Text style={styles.bookedLabel}>ocupado</Text> : null}
                     </View>
                   </Tappable>
                 );
@@ -980,6 +996,13 @@ const styles = StyleSheet.create({
   hourText: {
     fontFamily: family.mono,
     fontSize: 11
+  },
+  bookedLabel: {
+    fontFamily: family.mono,
+    fontSize: 7.5,
+    color: colors.ink4,
+    letterSpacing: 0.3,
+    marginTop: 1
   },
   confirm: {
     marginTop: 18
