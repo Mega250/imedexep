@@ -8,6 +8,7 @@ import { Tappable } from "@/atomic/atoms/Tappable";
 import { DesktopNavItem } from "@/navigation/desktopNavConfigs";
 import { goToScreen, replaceScreen } from "@/navigation/screenRouter";
 import { useBlockedScreens } from "@/state/blockedScreens";
+import { useTourTarget } from "@/state/onboarding";
 import { loadSession } from "@/state/sessionStore";
 import { fetchAppointments } from "@/services/api/appointmentsApi";
 import { logout as performLogout } from "@/services/api/authedRequest";
@@ -59,6 +60,7 @@ export function DesktopSidebar({ nav, activeScreen, role, roleBadge = "Médico" 
   const [dynamicCounts, setDynamicCounts] = useState<Record<string, number>>({});
   const blockedScreens = useBlockedScreens();
   const visibleNav = nav.filter((item) => !blockedScreens.has(item.screen));
+  const navTourRef = useTourTarget("nav-desktop"); // ancla del tour en escritorio
 
   useEffect(() => {
     let cancelled = false;
@@ -151,7 +153,7 @@ export function DesktopSidebar({ nav, activeScreen, role, roleBadge = "Médico" 
   ];
 
   return (
-    <View style={styles.sidebar}>
+    <View ref={navTourRef} style={styles.sidebar}>
       <View style={styles.logoRow}>
         <Logo height={26} width={72} />
         <Badge

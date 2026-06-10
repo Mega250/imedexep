@@ -14,6 +14,8 @@ import { getSessionSnapshot, saveSession } from "@/state/sessionStore";
 export type TourStep = {
   /** id del ancla a resaltar (registrada con useTourTarget). Sin target = tarjeta centrada. */
   target?: string;
+  /** id alterno para pantallas anchas (escritorio); si falta, se usa `target`. */
+  targetWide?: string;
   title: string;
   body: string;
 };
@@ -29,6 +31,7 @@ type OnboardingContextValue = {
   index: number;
   registerTarget: (id: string, node: Measurable) => void;
   measureCurrent: () => Promise<TargetRect | null>;
+  measureTarget: (id?: string) => Promise<TargetRect | null>;
   start: (steps: TourStep[]) => void;
   next: () => void;
   back: () => void;
@@ -67,10 +70,17 @@ export function OnboardingProvider({ children }: PropsWithChildren) {
     }
   }, []);
 
-  const measureCurrent = useCallback((): Promise<TargetRect | null> => {
-    const step = steps[index];
-    const node = step?.target ? targets.current.get(step.target) : null;
+  const measureTarget = useCallback((id?: string): Promise<TargetRect | null> => {
+    const node = id ? targets.current.get(id) : null;
     if (!node) return Promise.resolve(null);
+    // Web: getBoundingClientRect da coords de viewport reales y fiables; el
+    // measureInWindow de RNW puede quedar desfasado con ancestros posicionados.
+    const domNode = node as unknown as { getBoundingClientRect?: () => DOMRect };
+    if (typeof domNode.getBoundingClientRect === "function") {
+      const r = domNode.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return Promise.resolve(null);
+      return Promise.resolve({ x: r.left, y: r.top, width: r.width, height: r.height });
+    }
     return new Promise((resolve) => {
       try {
         node.measureInWindow((x, y, width, height) => {
@@ -84,7 +94,12 @@ export function OnboardingProvider({ children }: PropsWithChildren) {
         resolve(null);
       }
     });
-  }, [steps, index]);
+  }, []);
+
+  const measureCurrent = useCallback(
+    (): Promise<TargetRect | null> => measureTarget(steps[index]?.target),
+    [steps, index, measureTarget]
+  );
 
   const start = useCallback((nextSteps: TourStep[]) => {
     if (!nextSteps.length) return;
@@ -114,8 +129,8 @@ export function OnboardingProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value = useMemo<OnboardingContextValue>(
-    () => ({ active, steps, index, registerTarget, measureCurrent, start, next, back, finish }),
-    [active, steps, index, registerTarget, measureCurrent, start, next, back, finish]
+    () => ({ active, steps, index, registerTarget, measureCurrent, measureTarget, start, next, back, finish }),
+    [active, steps, index, registerTarget, measureCurrent, measureTarget, start, next, back, finish]
   );
 
   return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
@@ -151,6 +166,7 @@ export const PATIENT_TOUR_STEPS: TourStep[] = [
   },
   {
     target: "nav",
+    targetWide: "nav-desktop",
     title: "Tu navegación",
     body: "Desde esta barra entras a tu salud, tus citas, tu QR para compartir con un médico y el asistente."
   }

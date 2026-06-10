@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Platform, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Button } from "@/atomic/atoms/Button";
 import { Tappable } from "@/atomic/atoms/Tappable";
+import { DESKTOP_BREAKPOINT } from "@/navigation/desktopVariants";
 import { TargetRect, useOnboarding } from "@/state/onboarding";
 import { colors, radii } from "@/theme/tokens";
 import { family } from "@/theme/typography";
@@ -9,11 +10,24 @@ import { family } from "@/theme/typography";
 const DIM = "rgba(3,4,94,0.62)";
 const PAD = 8; // margen del recorte alrededor del target
 const CARD_GAP = 12;
+const CARD_H = 190; // alto aproximado del globo, para mantenerlo dentro de pantalla
 
 export function TourOverlay() {
-  const { active, steps, index, measureCurrent, next, back, finish } = useOnboarding();
+  const { active, steps, index, measureTarget, next, back, finish } = useOnboarding();
   const { width, height } = useWindowDimensions();
   const [rect, setRect] = useState<TargetRect | null>(null);
+  const [origin, setOrigin] = useState({ x: 0, y: 0 });
+  const overlayRef = useRef<View>(null);
+
+  const step = steps[index];
+  // Responsivo: en pantallas anchas (escritorio) usamos el ancla alterna
+  // (p.ej. la barra lateral); en móvil el target normal. Así el recorte
+  // resalta el elemento que SÍ está en pantalla en cada layout.
+  const targetId = step
+    ? width >= DESKTOP_BREAKPOINT
+      ? step.targetWide ?? step.target
+      : step.target
+    : undefined;
 
   useEffect(() => {
     if (!active) {
@@ -21,35 +35,79 @@ export function TourOverlay() {
       return;
     }
     let cancelled = false;
-    // Medimos tras un frame para que el layout del paso ya esté asentado.
-    const measure = () => measureCurrent().then((r) => !cancelled && setRect(r));
+    // Medimos varias veces para esperar a que el layout del paso y las
+    // animaciones de entrada (FadeIn) se asienten antes de fijar el recorte.
+    const measure = () => {
+      // Origen real del overlay y target medidos igual (getBoundingClientRect en
+      // web), para que rect - origin alinee el recorte aunque un ancestro con
+      // transform/filter desplace el overlay. measureInWindow puede reportar mal.
+      const node = overlayRef.current as unknown as {
+        getBoundingClientRect?: () => { left: number; top: number };
+        measureInWindow?: (cb: (x: number, y: number) => void) => void;
+      } | null;
+      const finish = (ox: number, oy: number) => {
+        if (cancelled) return;
+        setOrigin({ x: ox, y: oy });
+        measureTarget(targetId).then((r) => !cancelled && setRect(r));
+      };
+      if (Platform.OS === "web" && node?.getBoundingClientRect) {
+        const r = node.getBoundingClientRect();
+        finish(r.left, r.top);
+      } else if (node?.measureInWindow) {
+        node.measureInWindow((ox, oy) => finish(ox, oy));
+      } else {
+        finish(0, 0);
+      }
+    };
     setRect(null);
-    const t = setTimeout(measure, 60);
-    const t2 = setTimeout(measure, 320); // reintento por si el target aún no montaba
+    const raf = requestAnimationFrame(measure);
+    const timers = [setTimeout(measure, 80), setTimeout(measure, 360), setTimeout(measure, 700)];
+
+    // Web: si el usuario hace scroll (incluido scroll de contenedores internos,
+    // por eso capture=true) o cambia el tamaño, re-medimos para que el spotlight
+    // siga al target. measureInWindow da coords de viewport y el overlay es fixed.
+    let detachWeb: (() => void) | undefined;
+    if (Platform.OS === "web" && typeof window !== "undefined") {
+      const onChange = () => measure();
+      window.addEventListener("scroll", onChange, true);
+      window.addEventListener("resize", onChange);
+      detachWeb = () => {
+        window.removeEventListener("scroll", onChange, true);
+        window.removeEventListener("resize", onChange);
+      };
+    }
     return () => {
       cancelled = true;
-      clearTimeout(t);
-      clearTimeout(t2);
+      cancelAnimationFrame(raf);
+      timers.forEach(clearTimeout);
+      detachWeb?.();
     };
-  }, [active, index, measureCurrent]);
+  }, [active, index, targetId, measureTarget]);
 
   if (!active || !steps.length) return null;
 
-  const step = steps[index];
   const isLast = index === steps.length - 1;
 
   // Recorte (spotlight) con padding, clamp a la pantalla.
   const hole = rect
     ? {
-        x: Math.max(0, rect.x - PAD),
-        y: Math.max(0, rect.y - PAD),
+        x: Math.max(0, rect.x - origin.x - PAD),
+        y: Math.max(0, rect.y - origin.y - PAD),
         w: Math.min(width, rect.width + PAD * 2),
         h: rect.height + PAD * 2
       }
     : null;
 
-  // El globo va debajo del target si está en la mitad superior; si no, arriba.
-  const targetBelowHalf = hole ? hole.y > height * 0.5 : false;
+  // Posición vertical del globo, siempre dentro de la pantalla: debajo del
+  // target si cabe; si no, arriba; si tampoco (target muy alto, p.ej. la barra
+  // lateral en escritorio), centrado.
+  let cardTop = 0;
+  if (hole) {
+    const below = hole.y + hole.h + CARD_GAP;
+    const above = hole.y - CARD_GAP - CARD_H;
+    cardTop = below + CARD_H <= height ? below : above >= 0 ? above : (height - CARD_H) / 2;
+    cardTop = Math.min(Math.max(cardTop, CARD_GAP), Math.max(CARD_GAP, height - CARD_H - CARD_GAP));
+  }
 
   const card = (
     <View style={styles.card}>
@@ -70,8 +128,15 @@ export function TourOverlay() {
     </View>
   );
 
+  // Web: overlay anclado al viewport (coincide con measureInWindow =
+  // getBoundingClientRect). Nativo: absoluteFill cubre la pantalla.
+  const overlayStyle =
+    Platform.OS === "web"
+      ? ({ position: "fixed", top: 0, left: 0, right: 0, bottom: 0 } as any)
+      : StyleSheet.absoluteFill;
+
   return (
-    <View style={StyleSheet.absoluteFill} pointerEvents="box-none">
+    <View ref={overlayRef} style={overlayStyle} pointerEvents="box-none">
       {hole ? (
         <>
           {/* 4 rectángulos oscuros que dejan ver el target (spotlight) */}
@@ -90,14 +155,7 @@ export function TourOverlay() {
             ]}
           />
           {/* Globo: debajo o arriba del target */}
-          <View
-            style={[
-              styles.cardWrap,
-              targetBelowHalf
-                ? { bottom: height - hole.y + CARD_GAP }
-                : { top: hole.y + hole.h + CARD_GAP }
-            ]}
-          >
+          <View style={[styles.cardWrap, { top: cardTop }]}>
             {card}
           </View>
         </>
