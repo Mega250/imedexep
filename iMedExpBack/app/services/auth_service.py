@@ -1,7 +1,7 @@
 import json
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 
-from sqlalchemy import select, text, update
+from sqlalchemy import select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -177,88 +177,82 @@ class AuthService:
             {"uid": user_id},
         )
 
+    async def _email_exists(self, email: str) -> bool:
+        result = await self.session.execute(
+            sa_text(
+                'SELECT 1 FROM "user" WHERE email = :email AND deleted_at IS NULL LIMIT 1'
+            ),
+            {"email": email.lower()},
+        )
+        return result.scalar_one_or_none() is not None
+
     async def register_patient(self, data: PatientRegisterRequest) -> dict:
+        from app.repositories.pending_registration_repo import (
+            PendingRegistrationRepository,
+        )
+        from app.utils.email import send_verification_code
 
         enc = get_encryptor()
         curp_encrypted = enc.encrypt(data.curp)
         curp_hash = enc.hash_curp(data.curp)
         phone_encrypted = enc.encrypt(data.phone) if data.phone else None
         password_hash = hash_password(data.password)
+        email = data.email.lower()
 
         try:
-            health_questionnaire_json = (
-                json.dumps(data.health_questionnaire)
-                if data.health_questionnaire is not None
-                else None
-            )
-            result = await self.session.execute(
-                text("""
-                    SELECT user_id, patient_id
-                    FROM fn_register_patient_user(
-                        :email, :password_hash, :curp_encrypted, :curp_hash,
-                        :first_name, :last_name, :date_of_birth,
-                        :gender, :blood_type, :phone_encrypted,
-                        :street_address, :neighborhood, :city, :state,
-                        :postal_code, CAST(:health_questionnaire AS jsonb)
-                    )
-                """),
-                {
-                    "email": data.email.lower(),
-                    "password_hash": password_hash,
-                    "curp_encrypted": curp_encrypted,
-                    "curp_hash": curp_hash,
+            if await self._email_exists(email):
+                raise ConflictError("Ya existe una cuenta con ese correo")
+            if not await self.check_curp_available(data.curp):
+                raise ConflictError("Ya existe un paciente registrado con esa CURP")
+
+            repo = PendingRegistrationRepository(self.session)
+            pending_id = await repo.create_patient_pending(
+                email=email,
+                password_hash=password_hash,
+                curp_encrypted=curp_encrypted,
+                curp_hash=curp_hash,
+                phone_encrypted=phone_encrypted,
+                payload={
                     "first_name": data.first_name,
                     "last_name": data.last_name,
-                    "date_of_birth": data.date_of_birth,
+                    "date_of_birth": data.date_of_birth.isoformat(),
                     "gender": data.gender.value if data.gender else None,
                     "blood_type": data.blood_type.value if data.blood_type else None,
-                    "phone_encrypted": phone_encrypted,
                     "street_address": data.street_address,
                     "neighborhood": data.neighborhood,
                     "city": data.city,
                     "state": data.state,
                     "postal_code": data.postal_code,
-                    "health_questionnaire": health_questionnaire_json,
-                }
+                    "health_questionnaire": data.health_questionnaire,
+                },
             )
-            row = result.mappings().one()
-            user_id = row["user_id"]
+            code, expires_at = await repo.create_code(pending_id)
+            await send_verification_code(email, code)
+            status = await repo.resend_status(pending_id)
 
         except Exception as e:
             err = str(e)
-            if "DUPLICATE_EMAIL" in err:
+            if isinstance(e, ConflictError):
+                raise
+            if "uq_user_email" in err or "DUPLICATE_EMAIL" in err:
                 raise ConflictError("Ya existe una cuenta con ese correo")
-            if "DUPLICATE_CURP" in err:
+            if "uq_patient_curp_hash" in err or "DUPLICATE_CURP" in err:
                 raise ConflictError("Ya existe un paciente registrado con esa CURP")
             raise
 
-        sent = await self.send_verification_code(user_id, data.email.lower())
         return {
             "message": "Código de verificación enviado a tu correo",
-            "expires_at": sent["expires_at"],
-            "next_resend_at": sent["next_resend_at"],
-            "attempts_in_window": sent["attempts_in_window"],
-        }
-
-    async def send_verification_code(self, user_id: int, email: str) -> dict:
-        from app.repositories.email_verification_repo import EmailVerificationRepository
-        from app.utils.email import send_verification_code
-
-        repo = EmailVerificationRepository(self.session)
-        code, expires_at = await repo.create_code(user_id)
-        await send_verification_code(email, code)
-        status = await repo.resend_status(user_id)
-        return {
             "expires_at": expires_at,
             "next_resend_at": status.next_resend_at,
             "attempts_in_window": status.attempts_in_window,
         }
 
     async def resend_code(self, email: str) -> dict:
-        from app.repositories.email_verification_repo import (
+        from app.repositories.pending_registration_repo import (
             CODE_TTL_MINUTES,
-            EmailVerificationRepository,
+            PendingRegistrationRepository,
         )
+        from app.utils.email import send_verification_code
         from datetime import UTC, datetime, timedelta
 
         now = datetime.now(UTC)
@@ -268,44 +262,186 @@ class AuthService:
             "attempts_in_window": 0,
         }
 
-        try:
-            user = await self._get_active_user_by_email(email)
-        except UnauthorizedError:
-            return default_response
+        pending_repo = PendingRegistrationRepository(self.session)
+        pending = await pending_repo.get_active_by_email(email.lower())
+        if pending:
+            status = await pending_repo.resend_status(pending["id"])
+            if not status.can_resend:
+                return {
+                    "expires_at": status.code_expires_at or default_response["expires_at"],
+                    "next_resend_at": status.next_resend_at,
+                    "attempts_in_window": status.attempts_in_window,
+                }
+            try:
+                code, expires_at = await pending_repo.create_code(pending["id"])
+                await send_verification_code(email.lower(), code)
+                fresh_status = await pending_repo.resend_status(pending["id"])
+                return {
+                    "expires_at": expires_at,
+                    "next_resend_at": fresh_status.next_resend_at,
+                    "attempts_in_window": fresh_status.attempts_in_window,
+                }
+            except Exception:
+                return default_response
 
-        repo = EmailVerificationRepository(self.session)
-        status = await repo.resend_status(user.id)
-        if not status.can_resend:
-            return {
-                "expires_at": status.code_expires_at or default_response["expires_at"],
-                "next_resend_at": status.next_resend_at,
-                "attempts_in_window": status.attempts_in_window,
-            }
-
-        try:
-            sent = await self.send_verification_code(user.id, email)
-        except Exception:
-            return default_response
-        return sent
+        return default_response
 
     async def verify_email(self, email: str, code: str) -> TokenResponse:
-        from app.repositories.email_verification_repo import EmailVerificationRepository
+        from app.repositories.pending_registration_repo import (
+            PendingRegistrationRepository,
+        )
 
-        user = await self._get_active_user_by_email(email)
-        repo = EmailVerificationRepository(self.session)
+        pending_repo = PendingRegistrationRepository(self.session)
+        pending = await pending_repo.consume_code(email.lower(), code)
+        if pending:
+            try:
+                tokens = await self._complete_pending_registration(pending)
+            except Exception as e:
+                err = str(e)
+                if "DUPLICATE_EMAIL" in err or "uq_user_email" in err:
+                    raise ConflictError("Ya existe una cuenta con ese correo")
+                if "DUPLICATE_CURP" in err or "uq_patient_curp_hash" in err:
+                    raise ConflictError("Ya existe un paciente registrado con esa CURP")
+                if "DUPLICATE_LICENSE" in err or "uq_doctor_general_license" in err:
+                    raise ConflictError(
+                        "Ya existe un doctor registrado con esa cédula profesional"
+                    )
+                raise
+            await pending_repo.complete(pending["id"])
+            return tokens
 
-        verified = await repo.verify_code(user.id, code)
-        if not verified:
-            raise UnauthorizedError("Código inválido o expirado")
+        raise UnauthorizedError("Código inválido o expirado")
+    
+    async def _complete_pending_registration(self, pending: dict) -> TokenResponse:
+        role = pending["role"].value if hasattr(pending["role"], "value") else str(pending["role"])
+        if role == "patient":
+            return await self._complete_pending_patient(pending)
+        if role == "doctor":
+            return await self._complete_pending_doctor(pending)
+        raise UnprocessableError("Tipo de registro pendiente no soportado")
 
-        await self.session.execute(
-            sa_text(
-                "SELECT set_session_context(:uid, :role, :inst, :ip)"
+    def _pending_payload(self, pending: dict) -> dict:
+        payload = pending.get("payload") or {}
+        if isinstance(payload, str):
+            return json.loads(payload)
+        return dict(payload)
+
+    async def _complete_pending_patient(self, pending: dict) -> TokenResponse:
+        payload = self._pending_payload(pending)
+        date_of_birth = date.fromisoformat(payload["date_of_birth"])
+        health_questionnaire_json = (
+            json.dumps(payload.get("health_questionnaire"))
+            if payload.get("health_questionnaire") is not None
+            else None
+        )
+        result = await self.session.execute(
+            text(
+                """
+                SELECT user_id, patient_id
+                FROM fn_register_patient_user(
+                    :email, :password_hash, :curp_encrypted, :curp_hash,
+                    :first_name, :last_name, :date_of_birth,
+                    CAST(:gender AS gender_type), CAST(:blood_type AS blood_type), :phone_encrypted,
+                    :street_address, :neighborhood, :city, :state,
+                    :postal_code, CAST(:health_questionnaire AS jsonb)
+                )
+                """
             ),
             {
-                "uid": user.id,
-                "role": user.role.value if hasattr(user.role, "value") else str(user.role),
-                "inst": user.institution_id,
+                "email": pending["email"],
+                "password_hash": pending["password_hash"],
+                "curp_encrypted": pending["curp_encrypted"],
+                "curp_hash": pending["curp_hash"],
+                "first_name": payload["first_name"],
+                "last_name": payload["last_name"],
+                "date_of_birth": date_of_birth,
+                "gender": payload.get("gender"),
+                "blood_type": payload.get("blood_type"),
+                "phone_encrypted": pending["phone_encrypted"],
+                "street_address": payload.get("street_address"),
+                "neighborhood": payload.get("neighborhood"),
+                "city": payload.get("city"),
+                "state": payload.get("state"),
+                "postal_code": payload.get("postal_code"),
+                "health_questionnaire": health_questionnaire_json,
+            },
+        )
+        row = result.mappings().one()
+        user_id = row["user_id"]
+        await self._mark_user_verified(
+            user_id=user_id,
+            role="patient",
+            institution_id=None,
+        )
+        return TokenResponse(
+            access_token=create_access_token(
+                user_id=user_id,
+                role="patient",
+                institution_id=None,
+            ),
+            refresh_token=create_refresh_token(user_id=user_id),
+        )
+
+    async def _complete_pending_doctor(self, pending: dict) -> TokenResponse:
+        payload = self._pending_payload(pending)
+        result = await self.session.execute(
+            text(
+                """
+                SELECT user_id, doctor_id
+                FROM fn_register_doctor_user(
+                    :email, :password_hash, :first_name, :last_name,
+                    :general_license, :specialty_license, :specialty_id,
+                    :sub_specialty_id, :graduation_university, :contact_phone,
+                    :office_location, :institution_id, :clearance_level
+                )
+                """
+            ),
+            {
+                "email": pending["email"],
+                "password_hash": pending["password_hash"],
+                "first_name": payload["first_name"],
+                "last_name": payload["last_name"],
+                "general_license": pending["general_license"],
+                "specialty_license": payload.get("specialty_license"),
+                "specialty_id": payload["specialty_id"],
+                "sub_specialty_id": payload.get("sub_specialty_id"),
+                "graduation_university": payload.get("graduation_university"),
+                "contact_phone": payload.get("contact_phone"),
+                "office_location": payload.get("office_location"),
+                "institution_id": payload.get("institution_id"),
+                "clearance_level": payload.get("clearance_level", 1),
+            },
+        )
+        row = result.mappings().one()
+        user_id = row["user_id"]
+        institution_id = payload.get("institution_id")
+        await self._mark_user_verified(
+            user_id=user_id,
+            role="doctor",
+            institution_id=institution_id,
+        )
+        return TokenResponse(
+            access_token=create_access_token(
+                user_id=user_id,
+                role="doctor",
+                institution_id=institution_id,
+            ),
+            refresh_token=create_refresh_token(user_id=user_id),
+        )
+
+    async def _mark_user_verified(
+        self,
+        *,
+        user_id: int,
+        role: str,
+        institution_id: int | None,
+    ) -> None:
+        await self.session.execute(
+            sa_text("SELECT set_session_context(:uid, :role, :inst, :ip)"),
+            {
+                "uid": user_id,
+                "role": role,
+                "inst": institution_id,
                 "ip": "verify-email",
             },
         )
@@ -314,23 +450,13 @@ class AuthService:
                 'UPDATE "user" SET email_verified = true '
                 'WHERE id = :uid AND email_verified = false'
             ),
-            {"uid": user.id},
+            {"uid": user_id},
         )
         await self.session.flush()
         if result.rowcount == 0:
             raise UnauthorizedError(
                 "No pudimos marcar tu correo como verificado. Intenta de nuevo."
             )
-
-        return TokenResponse(
-            access_token=create_access_token(
-                user_id=user.id,
-                role=user.role.value,
-                institution_id=user.institution_id,
-            ),
-            refresh_token=create_refresh_token(user_id=user.id),
-        )
-    
 
     async def request_password_reset(self, email: str) -> dict:
         from app.repositories.password_reset_repo import (
@@ -470,30 +596,34 @@ class AuthService:
         # found+health, found+unknown o no verificable -> continuar.
 
     async def register_doctor(self, data: DoctorRegisterRequest) -> dict:
+        from app.repositories.pending_registration_repo import (
+            PendingRegistrationRepository,
+        )
+        from app.utils.email import send_verification_code
+
         await self._verify_cedula_or_raise(data.general_license)
         password_hash = hash_password(data.password)
+        email = data.email.lower()
 
         try:
             safe_institution_id = data.institution_id if data.institution_id != 0 else None
             safe_sub_specialty = data.sub_specialty_id if data.sub_specialty_id != 0 else None
-            result = await self.session.execute(
-                text(
-                    """
-                    SELECT user_id, doctor_id
-                    FROM fn_register_doctor_user(
-                        :email, :password_hash, :first_name, :last_name,
-                        :general_license, :specialty_license, :specialty_id,
-                        :sub_specialty_id, :graduation_university, :contact_phone,
-                        :office_location, :institution_id, :clearance_level
-                    )
-                    """
-                ),
-                {
-                    "email": data.email.lower(),
-                    "password_hash": password_hash,
+
+            if await self._email_exists(email):
+                raise ConflictError("Ya existe una cuenta con ese correo")
+            if await self._doctor_license_exists(data.general_license):
+                raise ConflictError(
+                    "Ya existe un doctor registrado con esa cédula profesional"
+                )
+
+            repo = PendingRegistrationRepository(self.session)
+            pending_id = await repo.create_doctor_pending(
+                email=email,
+                password_hash=password_hash,
+                general_license=data.general_license,
+                payload={
                     "first_name": data.first_name,
                     "last_name": data.last_name,
-                    "general_license": data.general_license,
                     "specialty_license": data.specialty_license,
                     "specialty_id": data.specialty_id,
                     "sub_specialty_id": safe_sub_specialty,
@@ -504,21 +634,38 @@ class AuthService:
                     "clearance_level": data.clearance_level,
                 },
             )
-            row = result.mappings().one()
-            user_id = row["user_id"]
-            sent = await self.send_verification_code(user_id, data.email.lower())
+            code, expires_at = await repo.create_code(pending_id)
+            await send_verification_code(email, code)
+            status = await repo.resend_status(pending_id)
 
         except Exception as e:
             err = str(e)
-            if "DUPLICATE_EMAIL" in err:
+            if isinstance(e, ConflictError):
+                raise
+            if "DUPLICATE_EMAIL" in err or "uq_user_email" in err:
                 raise ConflictError("Ya existe una cuenta con ese correo")
-            if "DUPLICATE_LICENSE" in err:
+            if "DUPLICATE_LICENSE" in err or "uq_doctor_general_license" in err:
                 raise ConflictError("Ya existe un doctor registrado con esa cédula profesional")
             raise Exception(f"Error interno al registrar doctor: {str(e)}")
 
         return {
             "message": "Código de verificación enviado a tu correo",
-            "expires_at": sent["expires_at"],
-            "next_resend_at": sent["next_resend_at"],
-            "attempts_in_window": sent["attempts_in_window"],
+            "expires_at": expires_at,
+            "next_resend_at": status.next_resend_at,
+            "attempts_in_window": status.attempts_in_window,
         }
+
+    async def _doctor_license_exists(self, general_license: str) -> bool:
+        result = await self.session.execute(
+            sa_text(
+                """
+                SELECT 1
+                FROM doctor
+                WHERE general_license = :general_license
+                  AND deleted_at IS NULL
+                LIMIT 1
+                """
+            ),
+            {"general_license": general_license},
+        )
+        return result.scalar_one_or_none() is not None

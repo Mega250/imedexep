@@ -292,7 +292,6 @@ export function VerifyEmailDesktopPage() {
 
             <Text style={styles.alt}>
               ¿Pegaste el código mal varias veces?{" "}
-              <Text style={styles.altLink}>Cambia el correo</Text> o{" "}
               <Text style={styles.altLink}>contacta soporte</Text>.
             </Text>
           </FadeIn>

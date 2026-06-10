@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/atomic/atoms/Button";
 import { FadeIn } from "@/atomic/atoms/FadeIn";
+import { Tappable } from "@/atomic/atoms/Tappable";
 import { FormField } from "@/atomic/molecules/FormField";
 import { PasswordChecklist } from "@/atomic/molecules/PasswordChecklist";
 import { SelectField } from "@/atomic/molecules/SelectField";
@@ -47,6 +48,7 @@ export function RegDoctorDesktopPage() {
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reveal, setReveal] = useState(false);
   const set = (k: keyof typeof form) => (v: string) => setForm((f) => ({ ...f, [k]: v }));
 
   const nombreError = useMemo(() => liveError(form.nombre, (v) => validateName(v, "Nombre")), [form.nombre]);
@@ -56,13 +58,11 @@ export function RegDoctorDesktopPage() {
   );
   const cedulaError = useMemo(() => liveError(form.cedula, validateProfessionalLicense), [form.cedula]);
   const emailError = useMemo(() => liveError(form.email, validateEmail), [form.email]);
-  const passwordError = useMemo(() => liveError(form.pwd, validatePassword), [form.pwd]);
 
   const nombreValid = !!form.nombre.trim() && !nombreError;
   const apellidosValid = !!form.apellidos.trim() && !apellidosError;
   const cedulaValid = !!form.cedula.trim() && !cedulaError;
   const emailValid = !!form.email.trim() && !emailError;
-  const passwordValid = !!form.pwd && !passwordError;
 
   async function handleSubmit() {
     if (busy) return;
@@ -211,11 +211,15 @@ export function RegDoctorDesktopPage() {
               label="Contraseña"
               placeholder="Mínimo 8 caracteres"
               icon="lock"
-              secureTextEntry
+              secureTextEntry={!reveal}
               autoCapitalize="none"
               value={form.pwd}
               onChangeText={set("pwd")}
-              valid={passwordValid}
+              rightSlot={
+                <Tappable onPress={() => setReveal((v) => !v)} hitSlop={8} scaleTo={0.9}>
+                  <Text style={styles.reveal}>{reveal ? "ocultar" : "ver"}</Text>
+                </Tappable>
+              }
             />
             <PasswordChecklist value={form.pwd} />
           </View>
@@ -291,5 +295,12 @@ const styles = StyleSheet.create({
     color: colors.ink3,
     textAlign: "center"
   },
-  termsLink: { color: colors.ink }
+  termsLink: { color: colors.ink },
+  reveal: {
+    fontFamily: family.mono,
+    fontSize: 11,
+    color: colors.ink3,
+    paddingHorizontal: 8,
+    paddingVertical: 6
+  }
 });

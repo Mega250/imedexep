@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/atomic/atoms/Button";
 import { FadeIn } from "@/atomic/atoms/FadeIn";
+import { Tappable } from "@/atomic/atoms/Tappable";
 import { AuthHeader } from "@/atomic/molecules/AuthHeader";
 import { FormField } from "@/atomic/molecules/FormField";
 import { PasswordChecklist } from "@/atomic/molecules/PasswordChecklist";
@@ -46,6 +47,7 @@ export function RegDoctorMobilePage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [reveal, setReveal] = useState(false);
 
   const nombreError = useMemo(() => liveError(nombre, (v) => validateName(v, "Nombre")), [nombre]);
   const apellidosError = useMemo(
@@ -54,13 +56,11 @@ export function RegDoctorMobilePage() {
   );
   const cedulaError = useMemo(() => liveError(cedula, validateProfessionalLicense), [cedula]);
   const emailError = useMemo(() => liveError(email, validateEmail), [email]);
-  const passwordError = useMemo(() => liveError(password, validatePassword), [password]);
 
   const nombreValid = !!nombre.trim() && !nombreError;
   const apellidosValid = !!apellidos.trim() && !apellidosError;
   const cedulaValid = !!cedula.trim() && !cedulaError;
   const emailValid = !!email.trim() && !emailError;
-  const passwordValid = !!password && !passwordError;
 
   async function handleSubmit() {
     if (busy) return;
@@ -179,11 +179,15 @@ export function RegDoctorMobilePage() {
             label="Contraseña"
             placeholder="Mínimo 8 caracteres"
             icon="lock"
-            secureTextEntry
+            secureTextEntry={!reveal}
             autoCapitalize="none"
             value={password}
             onChangeText={setPassword}
-            valid={passwordValid}
+            rightSlot={
+              <Tappable onPress={() => setReveal((v) => !v)} hitSlop={8} scaleTo={0.9}>
+                <Text style={styles.reveal}>{reveal ? "ocultar" : "ver"}</Text>
+              </Tappable>
+            }
           />
           <PasswordChecklist value={password} />
         </FadeIn>
@@ -254,5 +258,12 @@ const styles = StyleSheet.create({
   link: {
     fontFamily: family.regular,
     color: colors.ink
+  },
+  reveal: {
+    fontFamily: family.mono,
+    fontSize: 10.5,
+    color: colors.ink3,
+    paddingHorizontal: 8,
+    paddingVertical: 4
   }
 });

@@ -50,19 +50,6 @@ CREATE TABLE "user" (
         )
 );
 
-CREATE TABLE email_verification_code (
-    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id    BIGINT NOT NULL REFERENCES "user"(id) DEFERRABLE INITIALLY DEFERRED,
-    code       VARCHAR(6) NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL DEFAULT now() + INTERVAL '10 minutes',
-    used_at    TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-    CONSTRAINT chk_evc_expires_after_created 
-        CHECK (expires_at > created_at)
-);
-CREATE INDEX idx_evc_user_id ON email_verification_code(user_id);
-CREATE INDEX idx_evc_expires_at ON email_verification_code(expires_at);
-
 CREATE TABLE doctor (
     id                    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id               BIGINT NOT NULL REFERENCES "user"(id) DEFERRABLE INITIALLY DEFERRED,
